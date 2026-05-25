@@ -42,20 +42,18 @@ module game_logic (
     // ------------------------------------------------------------------------
     // Game tick generation (60 Hz update rate)
     // ------------------------------------------------------------------------
-    // 25.175 MHz / 60 = 419583.33 -> use 419583
-    localparam TICK_MAX = 419583;
     reg [18:0] tick_counter;
     wire game_tick;
     
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n)
             tick_counter <= 19'd0;
-        else if (tick_counter == TICK_MAX - 1)
+        else if (tick_counter == `TICK_MAX)
             tick_counter <= 19'd0;
         else
             tick_counter <= tick_counter + 1;
     end
-    assign game_tick = (tick_counter == TICK_MAX - 1);
+    assign game_tick = (tick_counter == `TICK_MAX);
 
     // ------------------------------------------------------------------------
     // AI paddle control
@@ -82,9 +80,8 @@ module game_logic (
     reg  [9:0]  next_ball_x, next_ball_y;
     reg  [8:0]  next_paddle_left_y, next_paddle_right_y;
     reg         serve_side;           // 0 = left serves, 1 = right serves
-    reg  [9:0]  ball_dx, ball_dy;     // ball velocity (signed, but direction only)
+    reg  [9:0]  ball_dx, ball_dy;     // ball velocity (direction only, magnitude 1)
     reg  [19:0] score_timer;          // delay after scoring
-    localparam SCORE_TIMEOUT = 419583; // ~1 second
 
     // ------------------------------------------------------------------------
     // State machine
@@ -111,15 +108,24 @@ module game_logic (
             score_event     <= 1'b0;
             game_over_event <= 1'b0;
 
+            // Default: next_* hold current value (prevents X propagation)
+            next_state         = game_state;
+            next_paddle_left_y = paddle_left_y;
+            next_paddle_right_y= paddle_right_y;
+            next_ball_x        = ball_x;
+            next_ball_y        = ball_y;
+            next_score_left    = score_left;
+            next_score_right   = score_right;
+
             case (game_state)
                 // ------- IDLE -------
                 S_IDLE: begin
                     if (start_pause) begin
                         // reset scores and start new game
-                        score_left  <= 4'd0;
-                        score_right <= 4'd0;
-                        serve_side  <= 1'b0;
-                        next_state  = S_SERVE;
+                        next_score_left  = 4'd0;
+                        next_score_right = 4'd0;
+                        serve_side      <= 1'b0;
+                        next_state       = S_SERVE;
                     end else begin
                         next_state = S_IDLE;
                     end
@@ -128,8 +134,8 @@ module game_logic (
                 // ------- SERVE -------
                 S_SERVE: begin
                     // Place ball at center, set direction toward serving side
-                    ball_x <= 10'd320 - (`BALL_SIZE / 2);
-                    ball_y <= 10'd240 - (`BALL_SIZE / 2);
+                    next_ball_x = 10'd320 - (`BALL_SIZE / 2);
+                    next_ball_y = 10'd240 - (`BALL_SIZE / 2);
                     if (serve_side == 1'b0) begin
                         ball_dx <= 10'd1;   // moving right
                     end else begin
@@ -207,7 +213,7 @@ module game_logic (
                             if (next_score_right == `MAX_SCORE) begin
                                 next_state = S_OVER;
                             end else begin
-                                serve_side = 1'b0;   // left serves next
+                                serve_side <= 1'b0;   // left serves next
                                 next_state = S_SCORE;
                             end
                         end else if (next_ball_x + `BALL_SIZE >= `BALL_MAX_X) begin
@@ -217,7 +223,7 @@ module game_logic (
                             if (next_score_left == `MAX_SCORE) begin
                                 next_state = S_OVER;
                             end else begin
-                                serve_side = 1'b1;   // right serves next
+                                serve_side <= 1'b1;   // right serves next
                                 next_state = S_SCORE;
                             end
                         end else begin
@@ -236,7 +242,7 @@ module game_logic (
 
                 // ------- SCORE (brief delay) -------
                 S_SCORE: begin
-                    if (score_timer == SCORE_TIMEOUT - 1) begin
+                    if (score_timer == `SCORE_TIMEOUT) begin
                         score_timer <= 20'd0;
                         next_state = S_SERVE;
                     end else begin
@@ -250,8 +256,8 @@ module game_logic (
                     game_over_event <= 1'b1;
                     if (start_pause) begin
                         // go back to idle and reset scores
-                        score_left  <= 4'd0;
-                        score_right <= 4'd0;
+                        next_score_left  = 4'd0;
+                        next_score_right = 4'd0;
                         next_state = S_IDLE;
                     end else begin
                         next_state = S_OVER;
