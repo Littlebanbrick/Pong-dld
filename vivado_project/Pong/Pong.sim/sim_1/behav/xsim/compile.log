@@ -1,0 +1,4 @@
+INFO: [VRFC 10-2263] Analyzing Verilog file "C:/Users/Littlebanbrick/Desktop/Pong/source_code/ai_paddle.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module ai_paddle
+INFO: [VRFC 10-2263] Analyzing Verilog file "C:/Users/Littlebanbrick/Desktop/Pong/sim/tb_ai_paddle.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module tb_ai_paddle
