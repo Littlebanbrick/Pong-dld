@@ -53,6 +53,7 @@ wire pll_locked;
 clk_wiz_0 u_clk_wiz (
     .clk_in1  (clk),
     .clk_out1 (clk_25m),
+    .reset    (rst_sw),
     .locked   (pll_locked)
 );
 
@@ -63,7 +64,7 @@ reg rst_s1, rst_s2;
 wire rst_n;
 
 always @(posedge clk_25m) begin
-    rst_s1 <= rst_sw;        // SW[0] assumed high-active reset
+    rst_s1 <= rst_sw || !pll_locked;        // SW[0] assumed high-active reset
     rst_s2 <= rst_s1;
 end
 assign rst_n = !rst_s2;      // active-low internal reset
