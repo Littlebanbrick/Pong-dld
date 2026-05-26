@@ -19,16 +19,16 @@ module buzzer_ctrl (
     // For simulation, we use much smaller values; actual values are commented.
     // ------------------------------------------------------------------------
     // Actual values (comment out for simulation):
-    // localparam HIT_HALF    = 12587; // 25.175e6 / 1000 / 2 ≈ 12587
-    // localparam SCORE_HALF  = 8391;  // 25.175e6 / 1500 / 2 ≈ 8391
-    // localparam OVER_HALF   = 6293;  // 25.175e6 / 2000 / 2 ≈ 6293
-    // localparam TIMER_MAX   = 5035000; // 0.2 sec * 25.175e6 ≈ 5035000
+    localparam HIT_HALF    = 12587; // 25.175e6 / 1000 / 2 ≈ 12587
+    localparam SCORE_HALF  = 8391;  // 25.175e6 / 1500 / 2 ≈ 8391
+    localparam OVER_HALF   = 6293;  // 25.175e6 / 2000 / 2 ≈ 6293
+    localparam TIMER_MAX   = 5035000; // 0.2 sec * 25.175e6 ≈ 5035000
 
     // Simulation-friendly values (to see waveform changes quickly)
-    localparam HIT_HALF    = 5;    // divides clk by ~10 -> high freq for fast sim
-    localparam SCORE_HALF  = 8;
-    localparam OVER_HALF   = 12;
-    localparam TIMER_MAX   = 200;  // simulation timer length
+    // localparam HIT_HALF    = 5;    // divides clk by ~10 -> high freq for fast sim
+    // localparam SCORE_HALF  = 8;
+    // localparam OVER_HALF   = 12;
+    //localparam TIMER_MAX   = 200;  // simulation timer length
 
     // ------------------------------------------------------------------------
     // Internal signals
