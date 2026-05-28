@@ -8,8 +8,8 @@
 module ps2_keyboard (
     input  wire  clk,          // 25.175 MHz
     input  wire  rst_n,
-    inout  wire  PS2_clk,
-    inout  wire  PS2_data,
+    input  wire  PS2_clk,
+    input  wire  PS2_data,
     output reg   left_up,
     output reg   left_down,
     output reg   right_up,

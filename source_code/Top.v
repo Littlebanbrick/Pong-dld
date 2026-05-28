@@ -32,8 +32,8 @@ module Top (
     output wire        vga_vs,
 
     // PS/2 keyboard
-    inout  wire        PS2_clk,
-    inout  wire        PS2_data,
+    input  wire        PS2_clk,
+    input  wire        PS2_data,
 
     // Buzzer
     output wire        buzzer

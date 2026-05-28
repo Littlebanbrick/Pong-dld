@@ -200,7 +200,7 @@ module vga_render (
     // Letters needed: G, A, M, E, (space), O, V, E, R
     // We store them in a small ROM, each letter 8 pixels wide, 16 rows tall.
     // Letter index: 0=G, 1=A, 2=M, 3=E, 4=space, 5=O, 6=V, 7=E, 8=R
-    wire [2:0] letter_index;
+    wire [3:0] letter_index;
     wire [3:0] row_in_char;
     wire [2:0] col_in_char;
     reg [7:0] letter_row;   // 8-bit row data for the selected letter
