@@ -213,10 +213,12 @@ seg_display u_seg (
 // LED status indicators
 // ============================================================================
 led_status u_led (
+    .clk        (clk_25m),
+    .rst_n      (rst_n),
     .game_state (game_state),
     .score_left (score_left),
     .score_right(score_right),
-    .serve_side (1'b0),              // you may wire from game_logic if needed
+    .serve_side (1'b0),              // TODO: expose serve_side from game_logic
     .led        (ard_led)
 );
 
