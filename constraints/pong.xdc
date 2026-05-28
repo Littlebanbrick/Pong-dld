@@ -1,0 +1,207 @@
+# ============================================================================
+# Pong Game - XDC Constraints for Sword Kintex 7 FPGA
+# Board: SWORD-002 (Basic I/O Ver 2.0 / 2017-02-24)
+# Target: Kintex 7 XC7K325T-2FFG676C
+# ============================================================================
+
+# ============================================================================
+# 1. Clock
+# ============================================================================
+# Main system clock: 100 MHz, single-ended, LVCMOS18 on pin AC18
+set_property PACKAGE_PIN AC18 [get_ports clk]
+set_property IOSTANDARD LVCMOS18 [get_ports clk]
+create_clock -period 10.000 -name clk [get_ports clk]
+
+# ============================================================================
+# 2. Reset (SW[0])
+# ============================================================================
+set_property PACKAGE_PIN AF10 [get_ports rst_sw]
+set_property IOSTANDARD LVCMOS15 [get_ports rst_sw]
+
+# ============================================================================
+# 3. Slide Switches SW[15:0]
+#    SW[1] used as AI enable (0 = two-player, 1 = AI)
+# ============================================================================
+set_property PACKAGE_PIN AF10 [get_ports {SW[0]}]
+set_property IOSTANDARD LVCMOS15 [get_ports {SW[0]}]
+set_property PACKAGE_PIN AF13 [get_ports {SW[1]}]
+set_property IOSTANDARD LVCMOS15 [get_ports {SW[1]}]
+set_property PACKAGE_PIN AE13 [get_ports {SW[2]}]
+set_property IOSTANDARD LVCMOS15 [get_ports {SW[2]}]
+set_property PACKAGE_PIN AF8  [get_ports {SW[3]}]
+set_property IOSTANDARD LVCMOS15 [get_ports {SW[3]}]
+set_property PACKAGE_PIN AE8  [get_ports {SW[4]}]
+set_property IOSTANDARD LVCMOS15 [get_ports {SW[4]}]
+set_property PACKAGE_PIN AF12 [get_ports {SW[5]}]
+set_property IOSTANDARD LVCMOS15 [get_ports {SW[5]}]
+set_property PACKAGE_PIN AE12 [get_ports {SW[6]}]
+set_property IOSTANDARD LVCMOS15 [get_ports {SW[6]}]
+set_property PACKAGE_PIN AE10 [get_ports {SW[7]}]
+set_property IOSTANDARD LVCMOS15 [get_ports {SW[7]}]
+set_property PACKAGE_PIN AD10 [get_ports {SW[8]}]
+set_property IOSTANDARD LVCMOS15 [get_ports {SW[8]}]
+set_property PACKAGE_PIN AD11 [get_ports {SW[9]}]
+set_property IOSTANDARD LVCMOS15 [get_ports {SW[9]}]
+set_property PACKAGE_PIN Y12  [get_ports {SW[10]}]
+set_property IOSTANDARD LVCMOS15 [get_ports {SW[10]}]
+set_property PACKAGE_PIN Y13  [get_ports {SW[11]}]
+set_property IOSTANDARD LVCMOS15 [get_ports {SW[11]}]
+set_property PACKAGE_PIN AA12 [get_ports {SW[12]}]
+set_property IOSTANDARD LVCMOS15 [get_ports {SW[12]}]
+set_property PACKAGE_PIN AA13 [get_ports {SW[13]}]
+set_property IOSTANDARD LVCMOS15 [get_ports {SW[13]}]
+set_property PACKAGE_PIN AB10 [get_ports {SW[14]}]
+set_property IOSTANDARD LVCMOS15 [get_ports {SW[14]}]
+set_property PACKAGE_PIN AA10 [get_ports {SW[15]}]
+set_property IOSTANDARD LVCMOS15 [get_ports {SW[15]}]
+
+# ============================================================================
+# 4. Matrix Keyboard (5 rows output, 4 columns input)
+#    Rows: driven low sequentially (active-low scan)
+#    Columns: read with internal pull-up
+# ============================================================================
+# Rows (output, active low)
+set_property PACKAGE_PIN V17 [get_ports {key_row[0]}]
+set_property IOSTANDARD LVCMOS18 [get_ports {key_row[0]}]
+set_property PACKAGE_PIN W18 [get_ports {key_row[1]}]
+set_property IOSTANDARD LVCMOS18 [get_ports {key_row[1]}]
+set_property PACKAGE_PIN W19 [get_ports {key_row[2]}]
+set_property IOSTANDARD LVCMOS18 [get_ports {key_row[2]}]
+set_property PACKAGE_PIN W15 [get_ports {key_row[3]}]
+set_property IOSTANDARD LVCMOS18 [get_ports {key_row[3]}]
+set_property PACKAGE_PIN W16 [get_ports {key_row[4]}]
+set_property IOSTANDARD LVCMOS18 [get_ports {key_row[4]}]
+
+# Columns (input, internal pull-up)
+set_property PACKAGE_PIN V18 [get_ports {key_col[0]}]
+set_property IOSTANDARD LVCMOS18 [get_ports {key_col[0]}]
+set_property PULLUP TRUE [get_ports {key_col[0]}]
+set_property PACKAGE_PIN V19 [get_ports {key_col[1]}]
+set_property IOSTANDARD LVCMOS18 [get_ports {key_col[1]}]
+set_property PULLUP TRUE [get_ports {key_col[1]}]
+set_property PACKAGE_PIN V14 [get_ports {key_col[2]}]
+set_property IOSTANDARD LVCMOS18 [get_ports {key_col[2]}]
+set_property PULLUP TRUE [get_ports {key_col[2]}]
+set_property PACKAGE_PIN W14 [get_ports {key_col[3]}]
+set_property IOSTANDARD LVCMOS18 [get_ports {key_col[3]}]
+set_property PULLUP TRUE [get_ports {key_col[3]}]
+
+# ============================================================================
+# 5. Arduino LEDs (8, active high)
+#    LED[0] = Idle, [1] = Serve, [2] = Playing, [3] = Serve Side
+#    [4] = Hit Paddle, [5] = Score, [6] = Pause (blink), [7] = Game Over
+# ============================================================================
+set_property PACKAGE_PIN AF24 [get_ports {ard_led[0]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {ard_led[0]}]
+set_property PACKAGE_PIN AE21 [get_ports {ard_led[1]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {ard_led[1]}]
+set_property PACKAGE_PIN Y22  [get_ports {ard_led[2]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {ard_led[2]}]
+set_property PACKAGE_PIN Y23  [get_ports {ard_led[3]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {ard_led[3]}]
+set_property PACKAGE_PIN AA23 [get_ports {ard_led[4]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {ard_led[4]}]
+set_property PACKAGE_PIN Y25  [get_ports {ard_led[5]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {ard_led[5]}]
+set_property PACKAGE_PIN AB26 [get_ports {ard_led[6]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {ard_led[6]}]
+set_property PACKAGE_PIN W23  [get_ports {ard_led[7]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {ard_led[7]}]
+
+# ============================================================================
+# 6. 7-Segment Display (common anode, dynamic scan)
+#    AN[3:0]   = digit select (active low)
+#    SEGMENT[7:0] = segment driver (active low), order: a,b,c,d,e,f,g,dp
+# ============================================================================
+# Digit selects AN[3:0]
+set_property PACKAGE_PIN AD21 [get_ports {AN[0]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {AN[0]}]
+set_property PACKAGE_PIN AC21 [get_ports {AN[1]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {AN[1]}]
+set_property PACKAGE_PIN AB21 [get_ports {AN[2]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {AN[2]}]
+set_property PACKAGE_PIN AC22 [get_ports {AN[3]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {AN[3]}]
+
+# Segment lines SEGMENT[7:0] (a, b, c, d, e, f, g, dp)
+set_property PACKAGE_PIN AB22 [get_ports {SEGMENT[0]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {SEGMENT[0]}]
+set_property PACKAGE_PIN AD24 [get_ports {SEGMENT[1]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {SEGMENT[1]}]
+set_property PACKAGE_PIN AD23 [get_ports {SEGMENT[2]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {SEGMENT[2]}]
+set_property PACKAGE_PIN Y21  [get_ports {SEGMENT[3]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {SEGMENT[3]}]
+set_property PACKAGE_PIN W20  [get_ports {SEGMENT[4]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {SEGMENT[4]}]
+set_property PACKAGE_PIN AC24 [get_ports {SEGMENT[5]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {SEGMENT[5]}]
+set_property PACKAGE_PIN AC23 [get_ports {SEGMENT[6]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {SEGMENT[6]}]
+set_property PACKAGE_PIN AA22 [get_ports {SEGMENT[7]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {SEGMENT[7]}]
+
+# ============================================================================
+# 7. VGA Output (12-bit color: R[3:0], G[3:0], B[3:0], HS, VS)
+#    RGB444 format, 640x480@60Hz
+# ============================================================================
+# Red channel
+set_property PACKAGE_PIN N21 [get_ports {vga_red[0]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {vga_red[0]}]
+set_property PACKAGE_PIN N22 [get_ports {vga_red[1]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {vga_red[1]}]
+set_property PACKAGE_PIN R21 [get_ports {vga_red[2]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {vga_red[2]}]
+set_property PACKAGE_PIN P21 [get_ports {vga_red[3]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {vga_red[3]}]
+
+# Green channel
+set_property PACKAGE_PIN R22 [get_ports {vga_green[0]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {vga_green[0]}]
+set_property PACKAGE_PIN R23 [get_ports {vga_green[1]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {vga_green[1]}]
+set_property PACKAGE_PIN T24 [get_ports {vga_green[2]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {vga_green[2]}]
+set_property PACKAGE_PIN T25 [get_ports {vga_green[3]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {vga_green[3]}]
+
+# Blue channel
+set_property PACKAGE_PIN T20 [get_ports {vga_blue[0]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {vga_blue[0]}]
+set_property PACKAGE_PIN R20 [get_ports {vga_blue[1]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {vga_blue[1]}]
+set_property PACKAGE_PIN T22 [get_ports {vga_blue[2]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {vga_blue[2]}]
+set_property PACKAGE_PIN T23 [get_ports {vga_blue[3]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {vga_blue[3]}]
+
+# Horizontal and Vertical sync
+set_property PACKAGE_PIN M22 [get_ports vga_hs]
+set_property IOSTANDARD LVCMOS33 [get_ports vga_hs]
+set_property PACKAGE_PIN M21 [get_ports vga_vs]
+set_property IOSTANDARD LVCMOS33 [get_ports vga_vs]
+
+# ============================================================================
+# 8. PS/2 Interface (bidirectional, open-drain emulated)
+# ============================================================================
+set_property PACKAGE_PIN N18 [get_ports PS2_clk]
+set_property IOSTANDARD LVCMOS33 [get_ports PS2_clk]
+set_property PACKAGE_PIN M19 [get_ports PS2_data]
+set_property IOSTANDARD LVCMOS33 [get_ports PS2_data]
+
+# ============================================================================
+# 9. Buzzer (passive piezoelectric, square wave output)
+# ============================================================================
+set_property PACKAGE_PIN AF25 [get_ports buzzer]
+set_property IOSTANDARD LVCMOS33 [get_ports buzzer]
+
+# ============================================================================
+# 10. Timing Exceptions
+#     These ports are static or quasi-static -- no need for aggressive
+#     timing closure. False paths reduce routing pressure.
+# ============================================================================
+# MMCM reset: toggles once at power-up, otherwise static
+set_false_path -from [get_ports rst_sw]
+
+# Slide switches: set once at game start, treated as static config
+set_false_path -from [get_ports {SW[*]}]
