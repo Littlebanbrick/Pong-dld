@@ -78,6 +78,13 @@ module keypad_scanner (
     end
 
     // ------------------------------------------------------------------------
+    // The row that was actually driven during the last scan interval.
+    // current_row points to the NEXT row; prev_row gives the row whose columns
+    // are currently stable in col_sync (fixes off-by-one in scan timing).
+    // ------------------------------------------------------------------------
+    wire [2:0] prev_row = (current_row == 3'd0) ? 3'd4 : current_row - 3'd1;
+
+    // ------------------------------------------------------------------------
     // Debounce: 8 consecutive stable readings (~8 ms) required
     // ------------------------------------------------------------------------
     localparam DEBOUNCE_CNT = 8;     // number of matching scans
@@ -111,7 +118,7 @@ module keypad_scanner (
         end else if (scan_tick) begin
             // Only check keys on their respective row
             // Left paddle keys (ROW_LEFT)
-            if (current_row == ROW_LEFT) begin
+            if (prev_row == ROW_LEFT) begin
                 // Col 0 -> left_up
                 if (col_sync[0] == 1'b0) begin
                     if (db_cnt_left_up < DEBOUNCE_CNT)
@@ -137,7 +144,7 @@ module keypad_scanner (
             end
 
             // Right paddle keys (ROW_RIGHT)
-            if (current_row == ROW_RIGHT) begin
+            if (prev_row == ROW_RIGHT) begin
                 // Col 0 -> right_up
                 if (col_sync[0] == 1'b0) begin
                     if (db_cnt_right_up < DEBOUNCE_CNT)
@@ -162,7 +169,7 @@ module keypad_scanner (
             end
 
             // Start/Pause key (ROW_START, Col 0)
-            if (current_row == ROW_START) begin
+            if (prev_row == ROW_START) begin
                 if (col_sync[0] == 1'b0) begin
                     if (db_cnt_start < DEBOUNCE_CNT)
                         db_cnt_start <= db_cnt_start + 1;
