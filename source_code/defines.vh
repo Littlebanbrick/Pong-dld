@@ -46,17 +46,17 @@
 //            values (e.g., 10) so that state transitions happen quickly.
 //            Restore original values before synthesis.
 // ----------------------------------------------------------------------------
-// Game tick rate: 25.175 MHz / (TICK_MAX+1) ¡Ö 60 Hz
+// Game tick rate: 25.175 MHz / (TICK_MAX+1) ~ 60 Hz
 `define TICK_MAX        19'd419583  // simulation: 10; actual: 419583
 //`define TICK_MAX 10
 // Score pause duration (in game ticks) ~1 second
-`define SCORE_TIMEOUT   19'd419583  // simulation: 10; actual: 419583
+`define SCORE_TIMEOUT   19'd60      // simulation: 10; actual: 60 (~1 second at 60 Hz)
 //`define SCORE_TIMEOUT 10
 
 // ----------------------------------------------------------------------------
 // 7-segment display scanning (used in seg_display.v)
 // ----------------------------------------------------------------------------
-// Scan frequency = 25.175 MHz / (SCAN_MAX+1) ¡Ö 4 kHz (250 Hz per digit)
+// Scan frequency = 25.175 MHz / (SCAN_MAX+1) ~ 4 kHz (250 Hz per digit)
 `define SCAN_MAX        13'd6293    // simulation: 10; actual: 6293
 //`define SCAN_MAX 10
 
