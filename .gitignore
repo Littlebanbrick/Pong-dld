@@ -1,22 +1,5 @@
 # Vivado project generated files
-vivado_project/*.*
-
-# Vivado log files
-*.log
-*.jou
-
-# Vivado generated files
-*.bit
-*.dcp
-*.pb
-*.xpr
-*.tcl
-*.backup.jou
-*.backup.log
-vivado_project/*.xpr
-vivado_project/*.data/
-vivado_project/*.gen/
-vivado_project/*.srcs/
+vivado_project/
 
 # Simulation waveform data files
 *.wdb
