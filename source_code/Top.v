@@ -132,6 +132,7 @@ wire [9:0]  ball_x, ball_y;
 wire [8:0]  paddle_left_y, paddle_right_y;
 // Event pulses for sound
 wire        hit_paddle, score_event, game_over_event;
+wire        serve_side;
 
 game_logic u_game_logic (
     .clk            (clk_25m),
@@ -155,7 +156,8 @@ game_logic u_game_logic (
     // Sound events
     .hit_paddle     (hit_paddle),
     .score_event    (score_event),
-    .game_over_event(game_over_event)
+    .game_over_event(game_over_event),
+    .serve_side     (serve_side)
 );
 
 // ============================================================================
@@ -218,7 +220,7 @@ led_status u_led (
     .game_state (game_state),
     .score_left (score_left),
     .score_right(score_right),
-    .serve_side (1'b0),              // TODO: expose serve_side from game_logic
+    .serve_side (serve_side),
     .led        (ard_led)
 );
 

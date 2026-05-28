@@ -24,6 +24,7 @@ module game_logic (
     output reg  [8:0]  paddle_left_y,
     output reg  [8:0]  paddle_right_y,
     // Sound event pulses (one clock wide)
+    output reg         serve_side,
     output reg         hit_paddle,
     output reg         score_event,
     output reg         game_over_event
@@ -79,9 +80,10 @@ module game_logic (
     reg  [3:0]  next_score_left, next_score_right;
     reg  [9:0]  next_ball_x, next_ball_y;
     reg  [8:0]  next_paddle_left_y, next_paddle_right_y;
-    reg         serve_side;           // 0 = left serves, 1 = right serves
     reg  [9:0]  ball_dx, ball_dy;     // ball velocity (direction only, magnitude 1)
     reg  [19:0] score_timer;          // delay after scoring
+    reg         start_pause_d;       // delayed copy for edge detection
+    reg  [15:0] rand_cnt;            // free-running counter for serve random
 
     // ------------------------------------------------------------------------
     // State machine
@@ -99,6 +101,8 @@ module game_logic (
             ball_dy         <= 10'd1;
             serve_side      <= 1'b0;
             score_timer     <= 20'd0;
+            start_pause_d   <= 1'b0;
+            rand_cnt        <= 16'd0;
             hit_paddle      <= 1'b0;
             score_event     <= 1'b0;
             game_over_event <= 1'b0;
@@ -107,6 +111,8 @@ module game_logic (
             hit_paddle      <= 1'b0;
             score_event     <= 1'b0;
             game_over_event <= 1'b0;
+            start_pause_d   <= start_pause;   // edge detection
+            rand_cnt        <= rand_cnt + 1;  // free-running for serve RNG
 
             // Default: next_* hold current value (prevents X propagation)
             next_state         = game_state;
@@ -120,7 +126,7 @@ module game_logic (
             case (game_state)
                 // ------- IDLE -------
                 S_IDLE: begin
-                    if (start_pause) begin
+                    if (start_pause && !start_pause_d) begin
                         // reset scores and start new game
                         next_score_left  = 4'd0;
                         next_score_right = 4'd0;
@@ -141,9 +147,9 @@ module game_logic (
                     end else begin
                         ball_dx <= -10'd1;  // moving left
                     end
-                    ball_dy <= ($urandom % 2) ? 10'd1 : -10'd1;  // random up/down
+                    ball_dy <= (rand_cnt[0]) ? 10'd1 : -10'd1;   // pseudo-random up/down
                     
-                    if (start_pause)
+                    if (start_pause && !start_pause_d)
                         next_state = S_PLAY;
                     else
                         next_state = S_SERVE;
@@ -152,7 +158,7 @@ module game_logic (
                 // ------- PLAY -------
                 S_PLAY: begin
                     // --- Pause check ---
-                    if (start_pause) begin
+                    if (start_pause && !start_pause_d) begin
                         next_state = S_PAUSE;
                     end else begin
                         // --- Paddle movement ---
@@ -234,7 +240,7 @@ module game_logic (
 
                 // ------- PAUSE -------
                 S_PAUSE: begin
-                    if (start_pause)
+                    if (start_pause && !start_pause_d)
                         next_state = S_PLAY;
                     else
                         next_state = S_PAUSE;
@@ -254,7 +260,7 @@ module game_logic (
                 // ------- GAME OVER -------
                 S_OVER: begin
                     game_over_event <= 1'b1;
-                    if (start_pause) begin
+                    if (start_pause && !start_pause_d) begin
                         // go back to idle and reset scores
                         next_score_left  = 4'd0;
                         next_score_right = 4'd0;
