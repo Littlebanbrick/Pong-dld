@@ -13,13 +13,7 @@ set_property IOSTANDARD LVCMOS18 [get_ports clk]
 create_clock -period 10.000 -name clk [get_ports clk]
 
 # ============================================================================
-# 2. Reset (SW[0])
-# ============================================================================
-set_property PACKAGE_PIN AF10 [get_ports rst_sw]
-set_property IOSTANDARD LVCMOS15 [get_ports rst_sw]
-
-# ============================================================================
-# 3. Slide Switches SW[15:0]
+# 2. Slide Switches SW[15:0] (SW[0] also used as system reset)
 #    SW[1] used as AI enable (0 = two-player, 1 = AI)
 # ============================================================================
 set_property PACKAGE_PIN AF10 [get_ports {SW[0]}]
@@ -200,8 +194,26 @@ set_property IOSTANDARD LVCMOS33 [get_ports buzzer]
 #     These ports are static or quasi-static -- no need for aggressive
 #     timing closure. False paths reduce routing pressure.
 # ============================================================================
-# MMCM reset: toggles once at power-up, otherwise static
-set_false_path -from [get_ports rst_sw]
-
 # Slide switches: set once at game start, treated as static config
 set_false_path -from [get_ports {SW[*]}]
+
+# ============================================================================
+# 11. Device Configuration
+# ============================================================================
+set_property CFGBVS VCCO [current_design]
+set_property CONFIG_VOLTAGE 3.3 [current_design]
+
+# ============================================================================
+# 12. PS/2 Pull-ups (prevent floating when no keyboard connected)
+# ============================================================================
+set_property PULLUP TRUE [get_ports PS2_clk]
+set_property PULLUP TRUE [get_ports PS2_data]
+
+# ============================================================================
+# 13. VGA Output Slew Rate (per course documentation)
+# ============================================================================
+set_property SLEW FAST [get_ports {vga_red[*]}]
+set_property SLEW FAST [get_ports {vga_green[*]}]
+set_property SLEW FAST [get_ports {vga_blue[*]}]
+set_property SLEW FAST [get_ports vga_hs]
+set_property SLEW FAST [get_ports vga_vs]

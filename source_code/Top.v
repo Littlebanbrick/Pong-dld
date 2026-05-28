@@ -10,9 +10,6 @@ module Top (
     // 100MHz system clock
     input  wire        clk,
 
-    // Reset (use SW[0])
-    input  wire        rst_sw,
-
     // Matrix keyboard (5 rows, 4 columns) - verify actual pins!
     output wire [4:0]  key_row,    // driven low sequentially
     input  wire [3:0]  key_col,    // read with internal pull-up
@@ -52,7 +49,7 @@ wire pll_locked;
 clk_wiz u_clk_wiz (
     .clk_in1  (clk),
     .clk_out1 (clk_25m),
-    .reset    (rst_sw),
+    .reset    (SW[0]),
     .locked   (pll_locked)
 );
 
@@ -63,7 +60,7 @@ reg rst_s1, rst_s2;
 wire rst_n;
 
 always @(posedge clk_25m) begin
-    rst_s1 <= rst_sw || !pll_locked;        // SW[0] assumed high-active reset
+    rst_s1 <= SW[0] || !pll_locked;         // SW[0] high-active reset
     rst_s2 <= rst_s1;
 end
 assign rst_n = !rst_s2;      // active-low internal reset
