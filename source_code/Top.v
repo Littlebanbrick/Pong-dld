@@ -92,8 +92,8 @@ wire ps2_left_up, ps2_left_down, ps2_right_up, ps2_right_down, ps2_start;
 ps2_keyboard u_ps2 (
     .clk        (clk_25m),
     .rst_n      (rst_n),
-    .ps2_clk    (PS2_clk),
-    .ps2_data   (PS2_data),
+    .PS2_clk    (PS2_clk),
+    .PS2_data   (PS2_data),
     .left_up    (ps2_left_up),
     .left_down  (ps2_left_down),
     .right_up   (ps2_right_up),
