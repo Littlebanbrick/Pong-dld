@@ -1,6 +1,15 @@
 // ============================================================================
 // keypad_scanner.v - 5x4 matrix keyboard scanner with debounce
 // Outputs: left_up, left_down, right_up, right_down, start_pause
+//
+// Physical key mapping (revised):
+//   Row 4 (paddle controls):
+//     Col 0 -> left_down
+//     Col 1 -> left_up
+//     Col 2 -> right_down
+//     Col 3 -> right_up
+//   Row 0:
+//     Col 0 -> start_pause
 // ============================================================================
 
 `include "defines.vh"
@@ -18,19 +27,10 @@ module keypad_scanner (
 );
 
     // ------------------------------------------------------------------------
-    // Physical key mapping (rows × cols)
-    //   Row 0: Left   up / down
-    //   Row 1: Right up / down
-    //   Row 2: Start/Pause
-    //   Row 3: (unused)
-    //   Row 4: (unused)
-    // Col 0: Up / Start
-    // Col 1: Down
-    // Col 2-3: (unused)
+    // Row identifiers
     // ------------------------------------------------------------------------
-    localparam ROW_LEFT   = 3'd0;
-    localparam ROW_RIGHT  = 3'd1;
-    localparam ROW_START  = 3'd2;
+    localparam ROW_PADDLE = 3'd4;  // paddle controls (4 keys)
+    localparam ROW_START  = 3'd0;  // start/pause
 
     // ------------------------------------------------------------------------
     // Scan timing: scan each row for ~1 ms -> 5 kHz total scan rate
@@ -79,8 +79,6 @@ module keypad_scanner (
 
     // ------------------------------------------------------------------------
     // The row that was actually driven during the last scan interval.
-    // current_row points to the NEXT row; prev_row gives the row whose columns
-    // are currently stable in col_sync (fixes off-by-one in scan timing).
     // ------------------------------------------------------------------------
     wire [2:0] prev_row = (current_row == 3'd0) ? 3'd4 : current_row - 3'd1;
 
@@ -95,12 +93,12 @@ module keypad_scanner (
         col_sync <= key_col;         // input already synchronized by IOB flops
     end
 
-    // For each of the 5 keys we need a debounce counter
+    // Debounce counters for each key
     reg [3:0] db_cnt_left_up,    db_cnt_left_down;
     reg [3:0] db_cnt_right_up,   db_cnt_right_down;
     reg [3:0] db_cnt_start;
 
-    // Current key states (after debounce)
+    // Debounced key states
     reg kp_left_up, kp_left_down, kp_right_up, kp_right_down, kp_start;
 
     always @(posedge clk or negedge rst_n) begin
@@ -116,59 +114,53 @@ module keypad_scanner (
             kp_right_down    <= 1'b0;
             kp_start         <= 1'b0;
         end else if (scan_tick) begin
-            // Only check keys on their respective row
-            // Left paddle keys (ROW_LEFT)
-            if (prev_row == ROW_LEFT) begin
-                // Col 0 -> left_up
+            // ========== Paddle controls on Row 4 ==========
+            if (prev_row == ROW_PADDLE) begin
+                // Col 0 -> left_down
                 if (col_sync[0] == 1'b0) begin
-                    if (db_cnt_left_up < DEBOUNCE_CNT)
-                        db_cnt_left_up <= db_cnt_left_up + 1;
-                end else begin
-                    if (db_cnt_left_up > 0)
-                        db_cnt_left_up <= db_cnt_left_up - 1;
-                end
-                // Col 1 -> left_down
-                if (col_sync[1] == 1'b0) begin
                     if (db_cnt_left_down < DEBOUNCE_CNT)
                         db_cnt_left_down <= db_cnt_left_down + 1;
                 end else begin
                     if (db_cnt_left_down > 0)
                         db_cnt_left_down <= db_cnt_left_down - 1;
                 end
-
-                // Update debounced outputs when counter reaches threshold
-                kp_left_up   <= (db_cnt_left_up   == DEBOUNCE_CNT) ||
-                                ((db_cnt_left_up   == DEBOUNCE_CNT-1) && (col_sync[0] == 1'b0));
-                kp_left_down <= (db_cnt_left_down == DEBOUNCE_CNT) ||
-                                ((db_cnt_left_down == DEBOUNCE_CNT-1) && (col_sync[1] == 1'b0));
-            end
-
-            // Right paddle keys (ROW_RIGHT)
-            if (prev_row == ROW_RIGHT) begin
-                // Col 0 -> right_up
-                if (col_sync[0] == 1'b0) begin
-                    if (db_cnt_right_up < DEBOUNCE_CNT)
-                        db_cnt_right_up <= db_cnt_right_up + 1;
-                end else begin
-                    if (db_cnt_right_up > 0)
-                        db_cnt_right_up <= db_cnt_right_up - 1;
-                end
-                // Col 1 -> right_down
+                // Col 1 -> left_up
                 if (col_sync[1] == 1'b0) begin
+                    if (db_cnt_left_up < DEBOUNCE_CNT)
+                        db_cnt_left_up <= db_cnt_left_up + 1;
+                end else begin
+                    if (db_cnt_left_up > 0)
+                        db_cnt_left_up <= db_cnt_left_up - 1;
+                end
+                // Col 2 -> right_down
+                if (col_sync[2] == 1'b0) begin
                     if (db_cnt_right_down < DEBOUNCE_CNT)
                         db_cnt_right_down <= db_cnt_right_down + 1;
                 end else begin
                     if (db_cnt_right_down > 0)
                         db_cnt_right_down <= db_cnt_right_down - 1;
                 end
+                // Col 3 -> right_up
+                if (col_sync[3] == 1'b0) begin
+                    if (db_cnt_right_up < DEBOUNCE_CNT)
+                        db_cnt_right_up <= db_cnt_right_up + 1;
+                end else begin
+                    if (db_cnt_right_up > 0)
+                        db_cnt_right_up <= db_cnt_right_up - 1;
+                end
 
-                kp_right_up   <= (db_cnt_right_up   == DEBOUNCE_CNT) ||
-                                 ((db_cnt_right_up   == DEBOUNCE_CNT-1) && (col_sync[0] == 1'b0));
-                kp_right_down <= (db_cnt_right_down == DEBOUNCE_CNT) ||
-                                 ((db_cnt_right_down == DEBOUNCE_CNT-1) && (col_sync[1] == 1'b0));
+                // Update debounced outputs
+                kp_left_down <= (db_cnt_left_down == DEBOUNCE_CNT) ||
+                                ((db_cnt_left_down == DEBOUNCE_CNT-1) && (col_sync[0] == 1'b0));
+                kp_left_up   <= (db_cnt_left_up   == DEBOUNCE_CNT) ||
+                                ((db_cnt_left_up   == DEBOUNCE_CNT-1) && (col_sync[1] == 1'b0));
+                kp_right_down<= (db_cnt_right_down == DEBOUNCE_CNT) ||
+                                ((db_cnt_right_down == DEBOUNCE_CNT-1) && (col_sync[2] == 1'b0));
+                kp_right_up  <= (db_cnt_right_up  == DEBOUNCE_CNT) ||
+                                ((db_cnt_right_up  == DEBOUNCE_CNT-1) && (col_sync[3] == 1'b0));
             end
 
-            // Start/Pause key (ROW_START, Col 0)
+            // ========== Start/Pause on Row 0 ==========
             if (prev_row == ROW_START) begin
                 if (col_sync[0] == 1'b0) begin
                     if (db_cnt_start < DEBOUNCE_CNT)
