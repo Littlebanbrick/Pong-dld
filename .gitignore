@@ -11,3 +11,5 @@ vivado_project/
 # OS generated files
 .DS_Store
 Thumbs.db
+
+xdc_example/
