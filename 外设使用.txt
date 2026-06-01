@@ -1,0 +1,415 @@
+外设使用
+本课程大程设计可使用多种外设来完成交互，如用来输入的键盘 / 鼠标、开关、按钮，用来输出的七段数码管、LED、VGA、蜂鸣器等。其中开关、LED、七段数码管的使用在小实验中已较为熟练，在此不进行详细说明，仅提供部分资源或链接。
+
+LED
+Arduino 板上共有 8 个 LED，可直接使用 8 个信号控制亮灭，在 Lab5 中第一次使用。
+
+SWORD 板上有 16 个 LED，接收串行数据，由串行通信信号 LED_sclk, LED_sclrn, LED_sout, LED_EN 控制亮灭，其原理见 LabD，这里提供 LEDP2S 的网表文件与接口文件，其约束请见任何小实验提供的约束中 #16led 注释部分。
+
+```
+XILINX-XDB 0.1 STUB 0.1 ASCII
+XILINX-XDM V1.6e
+$`;x5>66<2;=6D@_UU8S@drf48?1<3?420283C@ANOLMJKHIFGDE55=?89:;<=>?0123456331KMJ?5N299AQVYNFOE:7N??;BABEFEDKO:M<K>I039@A1=DDB:=7NBD1925?FJL:>:>7NBD2Y:8GIM5P82;96MCK826?FJLI8=0OAEN1E04?FJLI8N?;6MCK@3G<0=DDBH:96MCKB36?FJLL8?0OAEKVb9@HNBQWMC]EIK:;BNHB]><KEAMT<6?9:ALIHOS\LN<7N\JAUGG5>B63L80IC??;G2BEC6A8JIHONMLC39E@6=ALL?0Kb2?>49Dk979<2MdS=:4Gn]26>O7:2C:>6G=2:K06>O3:2C>56GAIUQWEQC13EOO\?]9;MM@O@B03EELENOC4:NVP72<D\^886BZT568HPR112GfyuQJN031?K403GO_[B\D1:M2?Ue<X'8;=>??12]O0>VFZ]20\Io{a=2==>VCi}k7==06;QFbpd:69730\Io{a=31:<=WLh~j0<=19:RGeqg;9=4i7]Jnt`>21?6912ZOmyo314<;?UBf|h6:255_D`vb878?3YNjxl2<>99S@drf4=437]Jnt`>6:==WLh~j0;07;QFbpd:0611[Hlzn<9<;?UBf|h622l5_IO]AQVOCPk1[ECQMURLBI@?<XBUC@XZAM79SWAIIM81Z86_30?78U9776<1Z0<?15:S?57823X6:?3;4Q=37:0=V48?596_317<7?T:66=1Z0?0;;P>0:1=V4=4?7\2:>59R83833X6<295^<9<7?T:>6:1ZS=o4Q^2\vvrwg}90]R?;;P]24g=VW8:T~~zou68UZ76j2[T=<Q}surlp1=VW88i7\Q>2^pppuis<2[T=>l4Q^30[wusxf~?7\Q>4c9R[42Xzz~{cy:4Q^360>WX9?h0]R?9_sqwtjrf3XU:S}{pnv0?TY5i2[T>R||tqmw7>WX;h1ZS>Q}surlp6=VW=k0]R:Prrvskq5<YV?j7\Q:_sqwtjr43XU=m6_P6^pppuis;2[T;l5^_6]qwqvh|:1ZS5o4Q^:\vvrwg}90]R7n;P]:[wusxf~97^?<;R325g=T9VNP=;SPwhff[hsW0UDYY2>5?32?VNUMNUNTY\NCU]MCFc<[AXNKRCFN^QJ^@0<[F_YOH84SUCWQV3<[}kyx95[YQG`?PUBZV\B_DLCE29UGF?<^@O\SYW_E0f8\LJNFQ'SHO.?.0"PPPD'8';+M^MFI79[WQJNJ>1S_YQYCB48\adXAm;;7Ujb_LcikwPbzzcdb<>4Xeo\Ilhhz_oydaa3:Zpp6=^MZ;37RQPXMLN[ZY7WVUZS=Q}surlp6=ddb90hic9;gkmmvn?3ds=5?:129lqq2<g|~:86azt368kpr402e~x>Q\W118vvr33zigg85|cmi21>udd{d?7~azt008|f1l9?:!?B"fge533{GHy;2i6NOx3d9B?4=9rY:h778:2`9565d>:o1>9olfzl:1?7<f0<1:6*64;;2?xU6k33<6>l5121`26c=:=ko>6j=f;295?7|[8n15:4<b;307f04m38?mnh4vU:b>5<62808iv]>d;;4>6d=9:9h:>k525c`b>">839:7)=l:`:8f7`=83;<6?m53dyK<`=#0m09j6T8:0y2>x"?1380(565999j01<72->m69=4n5g94>=n<;0;6):i:518j1c=921b8<4?:%6e>15<f=o1>65f4183>!2a2=90b9k53:9j7c<72->m69=4n5g90>=n;l0;6):i:518j1c==21b8i4?:%6e>15<f=o1:65f4b83>!2a2=90b9k57:9j0g<72->m69=4n5g9<>=n<h0;6):i:518j1c=121b844?:%6e>15<f=o1m65f4983>!2a2=90b9k5b:9j02<72->m69=4n5g9g>=n<?0;6):i:518j1c=l21b884?:%6e>15<f=o1i65f3e83>!2a2=90b9k5f:9j=d<722cj?7>5;h:`>5<<gh>1<75`a783>>if?3:17b<?:188f<5=83;1<7>t$9f9<c=O1;1C4h5`3`83>>{e:?0;6>4?:1y'<a<5:2B2>6F7e:&1a?6<a10;66g>e;29?j352900qo<8:180>5<7s-2o6?<4H808L=c<,;o1<6g7:188m4c=831d9?4?::a34<72=0;6=u+8e817>N>:2B3i6g7:188md<722c:i7>5;n71>5<<ukk>6=4<:183!>c2:80D4<4H9g8 7c=9o1b>54?::k1=?6=3f926=44}c;e>5<0290;w)6k:278L<4<@1o0(?k54:k1<?6=3`826=44i3c94?=n:k0;66g=c;29?l4c2900c>750;9~fd6=83=1<7>t$9f970=O1;1C4h5+2d87?l4?2900e?750;9j6d<722c9n7>5;h0`>5<<a;n1<75`3883>>{ei80;6:4?:1y'<a<4=2B2>6F7e:&1a?2<a;21<75f2883>>o5i3:17d<m:188m7e=831b>i4?::m0=?6=3th2h7>57;294~"?l39>7E7=;I:f?!4b201b>54?::k1=?6=3`8j6=44i3`94?=n:j0;66g=d;29?j5>2900qo8;:180>5<7s-2o6?<4H808L=c<a10;66g>e;29?j352900qo89:180>5<7s-2o6?<4H808L=c<a10;66g>e;29?j352900qo9::180>5<7s-2o6?<4H808L=c<a10;66g>e;29?j352900qo98:180>5<7s-2o6?<4H808L=c<a10;66g>e;29?j352900qo96:180>5<7s-2o6?<4H808L=c<a10;66g>e;29?j352900qo9m:180>5<7s-2o6?<4H808L=c<a10;66g>e;29?j352900qo9k:180>5<7s-2o6?<4H808L=c<a10;66g>e;29?j352900qo9i:180>5<7s-2o6?<4H808L=c<a10;66g>e;29?j352900qo6>:180>5<7s-2o6?<4H808L=c<a10;66g>e;29?j352900qo6<:180>5<7s-2o6?<4H808L=c<a10;66g>e;29?j352900qo88:180>5<7s-2o6?<4H808L=c<a10;66g>e;29?j352900qo86:180>5<7s-2o6?<4H808L=c<a10;66g>e;29?j352900qo8m:180>5<7s-2o6?<4H808L=c<a10;66g>e;29?j352900qo8k:180>5<7s-2o6?<4H808L=c<a10;66g>e;29?j352900qo8i:180>5<7s-2o6?<4H808L=c<a10;66g>e;29?j352900qo9=:180>5<7s-2o6?<4H808L=c<a10;66g>e;29?j352900qo8::186>5<7s-2o6>:4H808L=c<,;o196*:0;;:?l4?2900e?750;9j6d<722c9n7>5;n1:>5<<uk=?6=48:183!>c2:?0D4<4H9g8 7c=:81b>54?::k1=?6=3`8j6=44i3`94?=n:j0;66g=d;29?j5>2900qo99:184>5<7s-2o6>;4H808L=c<,;o1><5f2983>>o513:17d<n:188m7d=831b>n4?::k1`?6=3f926=44}c5;>5<0290;w)6k:278L<4<@1o0(?k5209j6=<722c957>5;h0b>5<<a;h1<75f2b83>>o5l3:17b=6:188yg1f290<6=4?{%:g>63<@080D5k4$3g9=>o503:17d<6:188m7g=831b>o4?::k1g?6=3`8o6=44o2;94?=zj>i1<7950;2x =b=;<1C5?5G8d9'6`<592c947>5;h0:>5<<a;k1<75f2c83>>o5k3:17d<k:188k6?=831vn:k50;594?6|,1n1?85G939K<`=#:l09=6g=8;29?l4>2900e?o50;9j6g<722c9o7>5;h0g>5<<g:31<75rb9294?1=83:p(5j5349K=7=O0l1/>h4=1:k1<?6=3`826=44i3c94?=n:k0;66g=c;29?l4c2900c>750;9~f=4=83=1<7>t$9f970=O1;1C4h5+2d815>o503:17d<6:188m7g=831b>o4?::k1g?6=3`8o6=44o2;94?=zj1>1<7950;2x =b=;<1C5?5G8d9'6`<592c947>5;h0:>5<<a;k1<75f2c83>>o5k3:17d<k:188k6?=831vn;650;594?6|,1n1?85G939K<`=#:l09=6g=8;29?l4>2900e?o50;9j6g<722c9o7>5;h0g>5<<g:31<75rb7c94?1=83:p(5j5349K=7=O0l1/>h4=1:k1<?6=3`826=44i3c94?=n:k0;66g=c;29?l4c2900c>750;9~f3e=83=1<7>t$9f970=O1;1C4h5+2d815>o503:17d<6:188m7g=831b>o4?::k1g?6=3`8o6=44o2;94?=zj?o1<7950;2x =b=;<1C5?5G8d9'6`<592c947>5;h0:>5<<a;k1<75f2c83>>o5k3:17d<k:188k6?=831vn:>50;594?6|,1n1?85G939K<`=#:l09=6g=8;29?l4>2900e?o50;9j6g<722c9o7>5;h0g>5<<g:31<75rb6194?1=83:p(5j5349K=7=O0l1/>h4=1:k1<?6=3`826=44i3c94?=n:k0;66g=c;29?l4c2900c>750;9~fd4=83>1<7>t$9f976=O1;1C4h5+2d85?l4?2900e?750;9j6d<722e857>5;|`;2?6=?3:1<v*7d;16?M?53A2n7)<j:29j6=<722c957>5;h0b>5<<a;h1<75f2b83>>o5l3:17b=6:188yg51290?6=4?{%:g>65<@080D5k4$3g92>"283327d<7:188m7?=831b>l4?::m0=?6=3ty?87>52z\70>;0;3837p};2;296~X3:272h7<7;|q75?6=:rT?=6380;0;?xu383:1>vP;0:?5a?4?3ty8j7>52z\0b>;1k3837p}<e;296~X4m27=m7<7;|q7`?6=:rT?h6398;0;?xu3k3:1>vP;c:?;0?4?3ty?n7>52z\7f>;?:3837p};a;296~X3i273<7<7;|q7=?6=:rT?5638e;0;?xu303:1>vP;8:?4g?4?3ty?;7>52z\73>;0i3837p};6;296~X3>27<47<7;|q71?6=:rT?96386;0;?xu4l3:1>vP<d:?40?4?3ty2m7>514y]=d=::?0370<8:99>34<?34k>6?74=769<>;1>3201:;58:?43?><5>314638b;:892b=027<j764=939<>;?;3201;958:?5=?><5?h14639d;:893`=027<>764}r:`>5<5sW2h70<9:0g8yvg32909wSo;;<c6>6?<uz8?6=4>5z?12?35348<6<k4=7796d=:i;09563<6;0:?8?c2;i01::52b9>33<5k27<47<l;<5b>7e<5>i1>n527d81g>;?838h706=:3a89=2=:j16:54=c:?5e?4d34<h6?m4=7g96f=:?909o6383;0`?xu5=3:1=9u226866>;1=38270o=:3c8960=:h165i4=b:?40?4e34==6?l4=6:96g=:?h09n638c;0a?81b2;h015>52c9><7<5j27387<m;<4;>7d<5?k1>o526b81f>;1m38i709?:3`8925=:k1v8o50;6xZd1<50n1>45273866>;0;38j7p}:9;297~;093?9707i:3a8925=:01v8650;6x9<`=:m16:k4:2:?:`?4f34=;6?o4}r74>5<3s43m6?o4=7f917=:>l09m6380;0:?xu2>3:18v36f;0a?80e2<801;m52`9>2`<512wx984?:5y>=c<5027=57;=;<4b>7g<5?i1>45rs4694?2|50l1>45266866>;1038j708n:3;8yv04290?w0o?:3a89=5==;16494=a:?5<?4>3ty=>7>54z?b4?4c342:68<4=9096d=:0=0956s|6083>1}:i909m638f;71?8>72;k015<5289~w36=83>p1l>52c9>3a<2:27<i7<n;<:3>7?<uz?m6=4;{<c3>7><5>h19?527b81e>;0m3827p}:e;290~;f83827096:40892g=:016;n4=9:p1a<72<q6;:4:2:?;2?4f34k:6?74=6:96d=:?h09m6s|5b83>0}:?<0>>63n1;0;?8112;k01:65289><3<512wx9o4?:4y>23<2:27j=7<m;<57>7g<5><1>4528781<>{t=:0;68u2a081e>;1<3?9708::3:89d4=:116;94=9:p<2<72;q6;<4>e:?:`?5>3ty2o7>515y>e0<5027j=7=6;<46>7d<5:<1>5529e81`>;0<38o7099:3f892>=:m16;l4=d:?4g?4c34=n6?j4=9296a=:0;09h6374;0g?80?2;n01;o52e9>2f<5l27=i7<k;<53>7b<5>91>i5rs3294?4|V;:01>85389~w=3=838p1:?5a:?;2?5>3tyj:7>52z?:7?5f3Wk=7p}6e;297~;>n39270o>:3f89=0=:j1v4h50;1x9d6=;016m<4=c:?;2?4c3ty=97>52z?50?7b34<>6>74}r57>5<5s4<=6<k4=6697<=z{><1<7<t=6795`=:??0856s|7983>7}:?>0:i6388;1:?xu0i3:1>v389;3f?81f2:30q~9l:18181e28o01:m5389~w2c=838p1:j51d9>3`<412wx4=4?:3y>3c<6m273<7=6;|q;6?6=:r73=7?j;<:1>6?<uz2?6=4={<:0>4c<51>1?45rs7:94?4|5?=1=h526980=>{t>h0;6?u26882a>;1i3927p}9c;296~;1j3;n708l:2;8yv0b2909w08k:0g893c=;01v:>50;0x93`=9l16;=4<9:p36<72;q6;?4>e:?47?5>3ty8;7>52z?b6?5>342=6?l4}|l267<728qC4h5rn000>5<6sA2n7p`>2583>4}O0l1vb<<::182M>b3td:>;4?:0yK<`=zf88<6=4>{I:f?xh6:10;6<uG8d9~j44>290:wE6j;|l26d<728qC4h5rn00a>5<6sA2n7p`>2b83>4}O0l1vb<<k:182M>b3td:>h4?:0yK<`=zf88m6=4>{I:f?xh6;90;6<uG8d9~j456290:wE6j;|l277<728qC4h5rn010>5<6sA2n7p`>3583>4}O0l1vb<=::182M>b3td:?;4?:0yK<`=zf89<6=4>{I:f?xh6;10;6<uG8d9~j45>290:wE6j;|l27d<728qC4h5rn01a>5<6sA2n7p`>3b83>4}O0l1vb<=k:182M>b3td:?h4?:0yK<`=zf89m6=4>{I:f?xh6<90;6<uG8d9~j426290:wE6j;|l207<728qC4h5rn060>5<6sA2n7p`>4583>4}O0l1vb<:::182M>b3td:8;4?:0yK<`=zf8><6=4>{I:f?xh6<10;6<uG8d9~j42>290:wE6j;|l20d<728qC4h5rn06a>5<6sA2n7p`>4b83>4}O0l1vb<:k:182M>b3td:8h4?:0yK<`=zf8>m6=4>{I:f?xh6=90;6<uG8d9~j436290:wE6j;|l217<728qC4h5rn070>5<6sA2n7p`>5583>4}O0l1vb<;::182M>b3td:9;4?:0yK<`=zf8?<6=4>{I:f?xh6=10;6<uG8d9~j43>290:wE6j;|l21d<728qC4h5rn07a>5<6sA2n7p`>5b83>4}O0l1vb<;k:182M>b3td:9h4?:0yK<`=zf8?m6=4>{I:f?x{zuIJHw<7j:261g3?b9tJKNv>r@ARxyEF
+```
+
+```
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date:    21:16:25 12/12/2015 
+// Design Name: 
+// Module Name:    P2S 
+// Project Name: 
+// Target Devices: 
+// Tool versions: 
+// Description: 
+//
+// Dependencies: 
+//
+// Revision: 
+// Revision 0.01 - File Created
+// Additional Comments: 
+//
+//////////////////////////////////////////////////////////////////////////////////
+module     LEDP2S(input wire clk,						//parallel to serial
+						input wire rst,
+						input wire Start,
+						input wire[DATA_BITS-1:0] PData,
+						output wire sclk,
+						output wire sclrn,
+						output wire sout,
+						output reg  EN
+						);
+						
+parameter
+	DATA_BITS = 16,  											// data length
+	DATA_COUNT_BITS = 4,										// data shift bits
+	DIR = 0;														// Shift direction, left-shift when 0
+		
+endmodule
+```
+
+```
+# #16leds
+# set_property PACKAGE_PIN N26 [get_ports LEDCLK]
+# set_property PACKAGE_PIN N24 [get_ports LEDCLR]
+# set_property PACKAGE_PIN M26 [get_ports LEDDT]
+# set_property PACKAGE_PIN P18 [get_ports LEDEN]
+# set_property IOSTANDARD LVCMOS33 [get_ports LEDCLK]
+# set_property IOSTANDARD LVCMOS33 [get_ports LEDCLR]
+# set_property IOSTANDARD LVCMOS33 [get_ports LEDDT]
+# set_property IOSTANDARD LVCMOS33 [get_ports LEDEN]
+```
+
+
+七段数码管
+Arduino 板上共有 4 个七段数码管，可使用使能信号 AN 进行扫描并用 SEGMENT 传入 8 位信号控制打印内容，在 Lab7 中编写并使用。
+
+SWORD 板上有 8 个七段数码管，接受串行数据，由串行通信信号 seg_sclk, seg_sclrn, seg_sout, seg_EN 控制，其原理见 LabD，在 Lab8 中第一次使用。
+
+蜂鸣器
+SWORD 板载 Arduino 板上有蜂鸣器，可用来发出简单的音效，其约束如下：
+
+
+set_property PACKAGE_PIN AF25 [get_ports buzzer]
+set_property IOSTANDARD LVCMOS33 [get_ports buzzer]
+蜂鸣器接收一定频率的信号（如方波）并发出对应频率的声音，可以设计一个根据输入音高得到特定频率方波的模块来处理声音，它类似于：
+
+
+module buzzer_driver(
+    input clk,
+    input[4:0] note,
+    output beep
+)
+模块内部，你可以根据输入的音高得到对应频率 freq 进而产生这一频率的方波 beep。
+
+VGA
+本节参考 blog，也可参考知乎文章。
+
+VGA(Video Graphics Array) 协议是一种使用模拟信号的显示标准，我们需要提供的是数字信号（如比较重要的 RGB 三色值、扫描同步信号等），板内 DAC(Digital-to-Analog Converter, DAC/D2C) 会将其转换为 VGA 接口需要的模拟信号。
+
+协议内容
+在此讲解一些比较基本的 VGA 协议内容，如果想了解更多请查看本节参考资料或自行搜索。
+
+影响画面质量的因素较主要的有分辨率、刷新率以及色彩。分辨率指屏幕中显示的有效像素点数量，一般以 aaa × bbb 表示，前者指一行中像素点个数，后者指一列中像素点个数。刷新率指屏幕内容刷新速度，一般以 Hz 为单位表示一秒钟刷新多少次。色彩主要指色彩空间格式与“精度”，VGA 要求使用 RGB 色彩空间（即红绿蓝三色混合）且为 12 位，即一个色彩通道用 4 位表示。在我们的实验中，使用 640×480@60Hz 的显示模式，需要接入的时钟频率为 25.175MHz。
+
+我们使用逐行扫描的方式来打印界面，即每次图片刷新都从左上角开始，先从左到右扫描完一行，再转到下一行的最左边开始扫描，直到扫描完最后一行。我们需要处理行时序与场时序，时序图如下（时序图来自知乎文章）：
+
+（图略）
+
+首先提供数据，对于 640×480@60Hz 的显示模式，上图中行扫描的 a, b, c, d, e 分别为 96, 48, 640, 16, 800，场扫描的 o, p, q, r, s 分别为 2, 33, 480, 10, 525。下面以行时序为例进行解释：行同步阶段 (96) 将行同步信号置于低位进行同步；显示后沿 (48) 将行同步信号重新拉起到高位但并不显示图像（将 RGB 三色通道均置为 0 即可）；有效数据 (640) 为每行 640 个像素点，此时将像素点对应的色彩 RGB 值放置在相应通道上进行色彩输出；显示前沿 (16) 不显示图像；之后将进入下一个周期的行扫描（从行同步开始）此时已经开始对下一行进行扫描，一次扫描经过的像素点数量 (800)，但实际打印的有效数据数量 (640)。场同步扫描与行同步扫描相似，不再赘述。
+
+对于我们而言，只需要知道同步信号拉低与拉高的时机以及打印有效数据的时机即可（行坐标在 [a+b, a+b+c) 且列坐标在 [o+p, o+p+q) 时打印有效的数据）。
+
+使用
+这里提供一个可用的 VGA 驱动模块代码，它来自老师提供的优秀工程。
+
+```
+module vgac (vga_clk,clrn,d_in,row_addr,col_addr,rdn,r,g,b,hs,vs); // vgac
+   input     [11:0] d_in;     // bbbb_gggg_rrrr, pixel
+   input            vga_clk;  // 25MHz
+   input            clrn;
+   output reg [8:0] row_addr; // pixel ram row address, 480 (512) lines
+   output reg [9:0] col_addr; // pixel ram col address, 640 (1024) pixels
+   output reg [3:0] r,g,b; // red, green, blue colors
+   output reg       rdn;      // read pixel RAM (active_low)
+   output reg       hs,vs;    // horizontal and vertical synchronization
+   // h_count: VGA horizontal counter (0-799)
+   reg [9:0] h_count; // VGA horizontal counter (0-799): pixels
+   always @ (posedge vga_clk) begin
+       if (!clrn) begin
+           h_count <= 10'h0;
+       end else if (h_count == 10'd799) begin
+           h_count <= 10'h0;
+       end else begin 
+           h_count <= h_count + 10'h1;
+       end
+   end
+   // v_count: VGA vertical counter (0-524)
+   reg [9:0] v_count; // VGA vertical   counter (0-524): lines
+   always @ (posedge vga_clk or negedge clrn) begin
+       if (!clrn) begin
+           v_count <= 10'h0;
+       end else if (h_count == 10'd799) begin
+           if (v_count == 10'd524) begin
+               v_count <= 10'h0;
+           end else begin
+               v_count <= v_count + 10'h1;
+           end
+       end
+   end
+    // signals, will be latched for outputs
+    wire  [9:0] row    =  v_count - 10'd35;     // pixel ram row addr 
+    wire  [9:0] col    =  h_count - 10'd144;    // pixel ram col addr 
+    wire        h_sync = (h_count > 10'd95);    //  96 -> 799
+    wire        v_sync = (v_count > 10'd1);     //   2 -> 524
+    wire        read   = (h_count > 10'd142) && // 143 -> 782
+                         (h_count < 10'd783) && //        640 pixels
+                         (v_count > 10'd34)  && //  35 -> 514
+                         (v_count < 10'd515);   //        480 lines
+    // vga signals
+    always @ (posedge vga_clk) begin
+        row_addr <=  row[8:0]; // pixel ram row address
+        col_addr <=  col;      // pixel ram col address
+        rdn      <= ~read;     // read pixel (active low)
+        hs       <=  h_sync;   // horizontal synchronization
+        vs       <=  v_sync;   // vertical   synchronization
+        r        <=  rdn ? 4'h0 : d_in[3:0]; // 4-bit red
+        g        <=  rdn ? 4'h0 : d_in[7:4]; // 4-bit green
+        b        <=  rdn ? 4'h0 : d_in[11:8]; // 4-bit blue
+    end
+endmodule
+```
+
+其模块接口如下：
+
+
+module vgac(
+    input vga_clk,
+    input clrn,
+    input [11:0] d_in,
+    output reg [8:0] row_addr,
+    output reg [9:0] col_addr,
+    output reg rdn,
+    output reg [3:0] r,g,b,
+    output reg hs, vs
+);
+输入信号：
+
+vga_clk：由原理可知，迎接入 25MHz 时钟，如果接入后无法正常显示，可以尝试用 MMCM 获得 25.175MHz 的时钟接入
+clrn：重置信号，低电平有效，有效时将扫描信号归位到 (0, 0)
+d_in：12 位 RGB 信号，格式为 bbbb_gggg_rrrr，每个色彩通道使用 4 位。需要注意，这里的 RGB 值是根据上个时钟周期的 row_addr, col_addr 确定的
+输出信号：
+
+row_addr, col_addr：扫描地址
+r, g, b：三个色彩通道值，直接连接到顶层模块输出即可
+rdn：判断当前扫描到的地址是否为有效数据，低电平为有效
+hs, vs：行同步信号与场同步信号，详见原理
+需要添加的约束参考：
+
+
+set_property {PACKAGE_PIN T20  IOSTANDARD LVCMOS33  SLEW FAST} [get_ports {b[0]}]
+set_property {PACKAGE_PIN R20  IOSTANDARD LVCMOS33  SLEW FAST} [get_ports {b[1]}]
+set_property {PACKAGE_PIN T22  IOSTANDARD LVCMOS33  SLEW FAST} [get_ports {b[2]}]
+set_property {PACKAGE_PIN T23  IOSTANDARD LVCMOS33  SLEW FAST} [get_ports {b[3]}]
+
+set_property {PACKAGE_PIN R22  IOSTANDARD LVCMOS33  SLEW FAST} [get_ports {g[0]}]
+set_property {PACKAGE_PIN R23  IOSTANDARD LVCMOS33  SLEW FAST} [get_ports {g[1]}]
+set_property {PACKAGE_PIN T24  IOSTANDARD LVCMOS33  SLEW FAST} [get_ports {g[2]}]
+set_property {PACKAGE_PIN T25  IOSTANDARD LVCMOS33  SLEW FAST} [get_ports {g[3]}]
+
+set_property {PACKAGE_PIN N21  IOSTANDARD LVCMOS33  SLEW FAST} [get_ports {r[0]}]
+set_property {PACKAGE_PIN N22  IOSTANDARD LVCMOS33  SLEW FAST} [get_ports {r[1]}]
+set_property {PACKAGE_PIN R21  IOSTANDARD LVCMOS33  SLEW FAST} [get_ports {r[2]}]
+set_property {PACKAGE_PIN P21  IOSTANDARD LVCMOS33  SLEW FAST} [get_ports {r[3]}]
+
+set_property {PACKAGE_PIN M22  IOSTANDARD LVCMOS33  SLEW FAST} [get_ports {hs}]
+set_property {PACKAGE_PIN M21  IOSTANDARD LVCMOS33  SLEW FAST} [get_ports {vs}]
+PS/2
+本节参考 知乎文章 及 blog，还可参考 blog
+
+PS/2 接口 (Personal System/2) 是一种 PC 电脑上的接口，可用来连接键盘和鼠标。接口共有 6 个接脚，除接地与 Vcc 外，有时钟和一位数据（另外两脚为保留未使用）。
+
+Sword 板内有 USB-PS2 转换，因此我们可以将 USB 键盘或鼠标插入板上 USB 口来使用，PS/2 相关信号约束如下：
+
+
+set_property PACKAGE_PIN N18 [get_ports PS2_clk]
+set_property IOSTANDARD LVCMOS33 [get_ports PS2_clk]
+set_property PACKAGE_PIN M19 [get_ports PS2_data]
+set_property IOSTANDARD LVCMOS33 [get_ports PS2_data]
+协议内容
+PS/2 协议中，一次传输有效数据为一字节，每次传输（一帧）为 11 位，分别为开始位（1 位，一直为 0）、有效数据（8 位）、校验位（1 位）、结束位（1 位，一直为 1），在我们简单的设计里，每一帧数据中只需要关注中间的 8 位有效数据即可。
+
+（图略）
+
+PS/2 将键盘编码分为通码 (Make) 与断码 (Break)，通码代表“按下”，断码代表“松开”。键盘上大部分按键的通码只有一字节（比如 WASD 等字母按键），但也有特殊按键的通码为两字节（比如上下左右，其格式为 E0 开头的两字节数据）。断码是在通码的基础上添加一字节的 F0 数据，比如 W 的通码为 1D 断码为 F0 1D，上 ↑ 的通码为 E0 75 断码为 E0 F0 75。由此我们可知，通码可能需要 1~2 帧，断码可能需要 2~3 帧（如果传输内容超过 1 帧，键盘可以保证传输内容是连续的，不会被其他信号隔开）。
+
+按键 - 通码 / 断码对照表（图略）
+
+观察几个按键行为加深理解（图片来自参考内容中的 知乎文章）。
+
+按一下 A 后释放：
+
+（图略）
+
+长按 A 后释放：
+
+（图略）
+
+组合键 Shift+A：
+
+（图略）
+
+PS/2 键盘可以实现全键无冲突，因为按键按下后如果不松开，则至少不会发送断码，我们可以认为在得到一个按键断码之前，这个按键一直是被按下的状态。
+
+实现上的建议
+根据你的需要实现模块，如果你的需要仅是使用特定的几个按键比如 ↑↓←→ 以及回车键，那么你的 PS2 模块可以类似于：
+
+
+module PS2(
+    input clk, rst,
+    input ps2_clk, ps2_data,
+    output reg up, left, right, enter
+);
+如果你需要键入内容（需要注意通码和 ASCII 的值并不对应），那么可能类似于：
+
+
+module PS2(
+    input clk, rst,
+    input ps2_clk, ps2_data,
+    output reg key_state, // Make or Break
+    output reg [7:0] key_ascii // Code -> ASCII
+);
+ps2_clk 的频率较低，数量级在 kHz 水平，而我们 FPGA 的时钟是较快的，在实现时可以对时钟进行打拍记录来确定“下降沿”的位置（参考代码来自 Pan-Ziyue/FPGA-JOJO）：
+
+
+reg ps2_clk_falg0, ps2_clk_falg1, ps2_clk_falg2;
+always@(posedge clk or posedge rst)begin
+    if(rst)begin
+        ps2_clk_falg0<=1'b0;
+        ps2_clk_falg1<=1'b0;
+        ps2_clk_falg2<=1'b0;
+    end
+    else begin
+        ps2_clk_falg0<=ps2_clk;
+        ps2_clk_falg1<=ps2_clk_falg0;
+        ps2_clk_falg2<=ps2_clk_falg1;
+    end
+end
+
+wire negedge_ps2_clk = !ps2_clk_falg1 & ps2_clk_falg2;
+reg negedge_ps2_clk_shift;
+
+always@(posedge clk)begin
+    negedge_ps2_clk_shift<=negedge_ps2_clk;
+end
+在下降沿时捕捉有效信息（从一帧的第 2 位开始连续 8 位为有效数据）：
+
+
+always@(posedge clk or posedge rst)begin
+    if(rst)
+        temp_data<=8'd0;
+    else if (negedge_ps2_clk_shift)begin
+        case(num)
+            4'd2 : temp_data[0]<=ps2_data;
+            4'd3 : temp_data[1]<=ps2_data;
+            4'd4 : temp_data[2]<=ps2_data;
+            4'd5 : temp_data[3]<=ps2_data;
+            4'd6 : temp_data[4]<=ps2_data;
+            4'd7 : temp_data[5]<=ps2_data;
+            4'd8 : temp_data[6]<=ps2_data;
+            4'd9 : temp_data[7]<=ps2_data;
+            default: temp_data<=temp_data;
+        endcase
+    end
+    else temp_data<=temp_data;
+end
+这里的 temp_data 除了可能是代表按键位置的数据，也可能是特殊按键的标记 E0，还可能是断码的标记 F0，你需要对此加以判断，并设置断码 / 特殊按键的提示，因为在 F0/E0 之后还需要接收数据才能组成完整的按键。具体实现可以参考上述潘学长提供的代码。
+
+```
+module PS2(
+	input clk, rst,
+	input ps2_clk, ps2_data,
+	output reg up, left, right, enter
+	);
+
+reg ps2_clk_falg0, ps2_clk_falg1, ps2_clk_falg2;
+wire negedge_ps2_clk = !ps2_clk_falg1 & ps2_clk_falg2;
+reg negedge_ps2_clk_shift;
+reg [9:0] data;
+reg data_break, data_done, data_expand;
+reg[7:0]temp_data;
+reg[3:0]num;
+
+always@(posedge clk or posedge rst)begin
+	if(rst)begin
+		ps2_clk_falg0<=1'b0;
+		ps2_clk_falg1<=1'b0;
+		ps2_clk_falg2<=1'b0;
+	end
+	else begin
+		ps2_clk_falg0<=ps2_clk;
+		ps2_clk_falg1<=ps2_clk_falg0;
+		ps2_clk_falg2<=ps2_clk_falg1;
+	end
+end
+
+always@(posedge clk or posedge rst)begin
+	if(rst)
+		num<=4'd0;
+	else if (num==4'd11)
+		num<=4'd0;
+	else if (negedge_ps2_clk)
+		num<=num+1'b1;
+end
+
+always@(posedge clk)begin
+	negedge_ps2_clk_shift<=negedge_ps2_clk;
+end
+
+
+always@(posedge clk or posedge rst)begin
+	if(rst)
+		temp_data<=8'd0;
+	else if (negedge_ps2_clk_shift)begin
+		case(num)
+			4'd2 : temp_data[0]<=ps2_data;
+			4'd3 : temp_data[1]<=ps2_data;
+			4'd4 : temp_data[2]<=ps2_data;
+			4'd5 : temp_data[3]<=ps2_data;
+			4'd6 : temp_data[4]<=ps2_data;
+			4'd7 : temp_data[5]<=ps2_data;
+			4'd8 : temp_data[6]<=ps2_data;
+			4'd9 : temp_data[7]<=ps2_data;
+			default: temp_data<=temp_data;
+		endcase
+	end
+	else temp_data<=temp_data;
+end
+
+always@(posedge clk or posedge rst)begin
+	if(rst)begin
+		data_break<=1'b0;
+		data<=10'd0;
+		data_done<=1'b0;
+		data_expand<=1'b0;
+	end
+	else if(num==4'd11)begin
+		if(temp_data==8'hE0)begin
+			data_expand<=1'b1;
+		end
+		else if(temp_data==8'hF0)begin
+			data_break<=1'b1;
+		end
+		else begin
+			data<={data_expand,data_break,temp_data};
+			data_done<=1'b1;
+			data_expand<=1'b0;
+			data_break<=1'b0;
+		end
+	end
+	else begin
+		data<=data;
+		data_done<=1'b0;
+		data_expand<=data_expand;
+		data_break<=data_break;
+	end
+end
+
+always @(posedge clk) begin
+	case (data)
+        10'h05A:enter <= 1;
+        10'h15A:enter <= 0;
+        10'h275:up <= 1;
+        10'h375:up <= 0;
+        10'h26B:left <= 1;
+        10'h36B:left <= 0;
+        10'h274:right <= 1;
+        10'h374:right <= 0;
+    endcase
+end
+
+endmodule
+```
