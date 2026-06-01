@@ -76,21 +76,21 @@ module seg_display (
         end else if (scan_tick) begin
             digit_sel <= digit_sel + 1;
             case (digit_sel)
-                2'd0: begin  // Left tens
-                    AN <= 4'b1110;
-                    SEGMENT <= digit_to_seg(score_left / 10);
+                2'd0: begin  // Rightmost digit -> right ones
+                    AN <= 4'b0111;
+                    SEGMENT <= digit_to_seg(score_right % 10);
                 end
-                2'd1: begin  // Left ones
-                    AN <= 4'b1101;
-                    SEGMENT <= digit_to_seg(score_left % 10);
-                end
-                2'd2: begin  // Right tens
+                2'd1: begin  // Right tens
                     AN <= 4'b1011;
                     SEGMENT <= digit_to_seg(score_right / 10);
                 end
-                2'd3: begin  // Right ones
-                    AN <= 4'b0111;
-                    SEGMENT <= digit_to_seg(score_right % 10);
+                2'd2: begin  // Left ones
+                    AN <= 4'b1101;
+                    SEGMENT <= digit_to_seg(score_left % 10);
+                end
+                2'd3: begin  // Leftmost digit -> left tens
+                    AN <= 4'b1110;
+                    SEGMENT <= digit_to_seg(score_left / 10);
                 end
             endcase
         end

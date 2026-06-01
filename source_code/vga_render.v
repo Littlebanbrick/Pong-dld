@@ -200,25 +200,32 @@ module vga_render (
     // Letters needed: G, A, M, E, (space), O, V, E, R
     // We store them in a small ROM, each letter 8 pixels wide, 16 rows tall.
     // Letter index: 0=G, 1=A, 2=M, 3=E, 4=space, 5=O, 6=V, 7=E, 8=R
+    // TEXT_SCALE controls pixel doubling (1=8x16 per char, 2=16x32, etc.)
     wire [3:0] letter_index;
     wire [3:0] row_in_char;
     wire [2:0] col_in_char;
     reg [7:0] letter_row;   // 8-bit row data for the selected letter
 
-    // Position of "GAME OVER" on screen (centered: 9 chars * 8 = 72 pixels wide)
-    localparam GAMEOVER_X = 284;   // 320 - 36
-    localparam GAMEOVER_Y = 232;   // 240 - 8
-    localparam GAMEOVER_W = 72;
+    // Position of "GAME OVER" on screen (centered, scaled by TEXT_SCALE)
+    localparam CHAR_W      = 8  * `TEXT_SCALE;   // scaled char width
+    localparam CHAR_H      = 16 * `TEXT_SCALE;   // scaled char height
+    localparam GAMEOVER_W  = 9 * CHAR_W;         // 9 chars total width
+    localparam GAMEOVER_H  = CHAR_H;
+    localparam GAMEOVER_X  = (`SCREEN_W  - GAMEOVER_W) / 2;
+    localparam GAMEOVER_Y  = (`SCREEN_H  - GAMEOVER_H) / 2;
 
     wire inside_gameover;
     assign inside_gameover = (game_state == S_OVER) &&
                              (col >= GAMEOVER_X) && (col < GAMEOVER_X + GAMEOVER_W) &&
-                             (row >= GAMEOVER_Y) && (row < GAMEOVER_Y + 16);
+                             (row >= GAMEOVER_Y) && (row < GAMEOVER_Y + GAMEOVER_H);
 
-    // Determine which letter we are in (0 .. 8)
-    assign letter_index = (col - GAMEOVER_X) / 8;   // integer division
-    assign row_in_char  = row - GAMEOVER_Y;
-    assign col_in_char  = (col - GAMEOVER_X) % 8;
+    // Determine which letter we are in (0 .. 8), with pixel scaling
+    wire [9:0] local_x = col - GAMEOVER_X;
+    wire [9:0] local_y = row - GAMEOVER_Y;
+
+    assign letter_index = local_x / CHAR_W;               // which char
+    assign row_in_char  = local_y / `TEXT_SCALE;          // which row in bitmap
+    assign col_in_char  = (local_x % CHAR_W) / `TEXT_SCALE; // which col in bitmap
 
     // Letter bitmap ROM
     always @* begin
