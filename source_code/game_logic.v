@@ -45,7 +45,7 @@ module game_logic (
     // Game tick generation (variable rate based on difficulty)
     // ------------------------------------------------------------------------
     reg [18:0] tick_counter;
-    reg [18:0] tick_threshold;
+    reg [18:0] tick_threshold = `TICK_THRESH_SPEED1;
     wire game_tick;
     
     always @(posedge clk or negedge rst_n) begin

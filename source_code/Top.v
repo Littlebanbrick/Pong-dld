@@ -59,7 +59,7 @@ clk_wiz u_clk_wiz (
 reg rst_s1, rst_s2;
 wire rst_n;
 
-always @(posedge clk_25m) begin
+always @(posedge clk) begin
     rst_s1 <= SW[0] || !pll_locked;         // SW[0] high-active reset
     rst_s2 <= rst_s1;
 end
