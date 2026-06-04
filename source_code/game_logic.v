@@ -46,13 +46,13 @@ module game_logic (
     // ------------------------------------------------------------------------
     reg [18:0] tick_counter;
     reg [18:0] tick_threshold;
+    reg        tick_reset;
     wire game_tick;
     
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
-            tick_counter   <= 19'd0;
-            tick_threshold <= `TICK_THRESH_SPEED1;
-        end else if (tick_counter >= tick_threshold) begin
+            tick_counter <= 19'd0;
+        end else if (tick_reset || tick_counter >= tick_threshold) begin
             tick_counter <= 19'd0;
         end else begin
             tick_counter <= tick_counter + 1;
@@ -130,6 +130,7 @@ module game_logic (
             serve_timer     <= 20'd0;
             start_pause_d   <= 1'b0;
             rand_cnt        <= 16'd0;
+            tick_threshold  <= `TICK_THRESH_SPEED1;
             hit_paddle      <= 1'b0;
             score_event     <= 1'b0;
             game_over_event <= 1'b0;
@@ -140,6 +141,7 @@ module game_logic (
             game_over_event <= 1'b0;
             start_pause_d   <= start_pause;   // edge detection
             rand_cnt        <= rand_cnt + 1;  // free-running for serve RNG
+            tick_reset      <= 1'b0;
 
             // Default: next_* hold current value (prevents X propagation)
             next_state         = game_state;
@@ -159,7 +161,7 @@ module game_logic (
                         next_score_right = 4'd0;
                         serve_side      <= 1'b0;
                         serve_timer     <= 20'd0;
-                        tick_counter    <= 19'd0;
+                        tick_reset      <= 1'b1;
                         next_state       = S_SERVE;
                     end else begin
                         next_state = S_IDLE;
@@ -198,11 +200,11 @@ module game_logic (
                     // Transition: manual start or auto-serve timeout
                     if (start_pause && !start_pause_d) begin
                         serve_timer  <= 20'd0;
-                        tick_counter <= 19'd0;
+                        tick_reset   <= 1'b1;
                         next_state = S_PLAY;
                     end else if (serve_timer >= `SERVE_TIMEOUT) begin
                         serve_timer  <= 20'd0;
-                        tick_counter <= 19'd0;
+                        tick_reset   <= 1'b1;
                         next_state = S_PLAY;
                     end else begin
                         next_state = S_SERVE;
