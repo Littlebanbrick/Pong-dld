@@ -200,14 +200,14 @@ module game_logic (
                         // 7 discrete serve angles: dy ∈ {-3,-2,-1,0,1,2,3}
                         // Constraint: |dy| ≤ |dx| → within ±45° cone
                         case (rand_cnt[2:0])
-                            3'd0: ball_dy <= 11'sd -3;
-                            3'd1: ball_dy <= 11'sd -2;
-                            3'd2: ball_dy <= 11'sd -1;
-                            3'd3: ball_dy <= 11'sd  0;
-                            3'd4: ball_dy <= 11'sd  1;
-                            3'd5: ball_dy <= 11'sd  2;
-                            3'd6: ball_dy <= 11'sd  3;
-                            default: ball_dy <= 11'sd 0;
+                            3'd0: ball_dy <= -3;
+                            3'd1: ball_dy <= -2;
+                            3'd2: ball_dy <= -1;
+                            3'd3: ball_dy <=  0;
+                            3'd4: ball_dy <=  1;
+                            3'd5: ball_dy <=  2;
+                            3'd6: ball_dy <=  3;
+                            default: ball_dy <= 0;
                         endcase
 
                         // Update tick threshold for this round
