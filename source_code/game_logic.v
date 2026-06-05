@@ -22,8 +22,8 @@ module game_logic (
     output reg  [3:0]  score_right,
     output reg  [9:0]  ball_x,
     output reg  [9:0]  ball_y,
-    output reg  [8:0]  paddle_left_y,
-    output reg  [8:0]  paddle_right_y,
+    output reg  [9:0]  paddle_left_y,
+    output reg  [9:0]  paddle_right_y,
     // Sound event pulses (one clock wide)
     output reg         serve_side,
     output reg         hit_paddle,
@@ -60,14 +60,12 @@ module game_logic (
     assign game_tick = (tick_counter >= tick_threshold);
 
     // ------------------------------------------------------------------------
-    // Signed temporary signals for position updates, boundary checks,
-    // and spin computation.  We extend ball_x/y to signed so that
-    // negative velocities (moving left/up) produce correct signed results.
+    // Signed temporary signals for position updates and boundary checks
     // ------------------------------------------------------------------------
     wire signed [10:0] next_x_s = $signed({1'b0, ball_x}) + ball_dx;
     wire signed [10:0] next_y_s = $signed({1'b0, ball_y}) + ball_dy;
 
-    // Center-of-gravity positions for spin (paddle hit offset)
+    // Center-of-gravity positions for paddle hit offset calculation
     wire [9:0] ball_center_y  = ball_y  + (`BALL_SIZE  >> 1);
     wire [9:0] pad_l_center_y = paddle_left_y  + (`PADDLE_H >> 1);
     wire [9:0] pad_r_center_y = paddle_right_y + (`PADDLE_H >> 1);
@@ -104,7 +102,7 @@ module game_logic (
             2'b10: ball_speed_idx = 3'd3;  // Master
             2'b11: begin                   // Auto: speed = 1 + round_count
                 if (score_left + score_right >= `AUTO_MAX_SPEED - 1)
-                    ball_speed_idx = `AUTO_MAX_SPEED;
+                    ball_speed_idx = 3'd5;  // cap at max speed
                 else
                     ball_speed_idx = score_left + score_right + 3'd1;
             end
@@ -118,17 +116,37 @@ module game_logic (
     reg  [2:0]  next_state;
     reg  [3:0]  next_score_left, next_score_right;
     reg  [9:0]  next_ball_x, next_ball_y;
-    reg  [8:0]  next_paddle_left_y, next_paddle_right_y;
-    reg signed  [10:0] ball_dx, ball_dy;  // signed velocity (±1..±3 + spin)
+    reg  [9:0]  next_paddle_left_y, next_paddle_right_y;
+    reg signed  [10:0] ball_dx, ball_dy;  // signed velocity
     reg  [19:0] score_timer;              // delay after scoring
     reg  [19:0] serve_timer;              // delay before auto-serve
     reg         start_pause_d;           // delayed copy for edge detection
     reg  [15:0] rand_cnt;                // free-running counter for serve random
     reg         hit_paddle_this;          // pulsed if paddle hit in this tick
-    reg signed  [1:0] serve_dy_base;      // serve fractional dy (unused/deprecated): base (-1/0/1)
-    reg         [1:0] serve_dy_numer;    // serve fractional dy (unused/deprecated): numerator (0/1/2)
-    reg signed  [3:0] dy_frac_accum;    // accumulator for fractional dy movement
-    reg signed  [10:0] spin_temp;       // intermediate for spin calculation
+
+    // Velocity lookup table registers (combinational outputs)
+    reg signed  [3:0]  angle_index;      // angle index (-4..+4) for lookup
+    reg         [2:0]  vel_dx_mag;       // dx magnitude from lookup
+    reg signed  [10:0] vel_dy;           // dy from lookup
+
+    // ------------------------------------------------------------------------
+    // Velocity lookup table: angle-index -> (dx_mag, dy)   with |V|≈5
+    // Keeps total speed approximately constant regardless of angle.
+    // ------------------------------------------------------------------------
+    always @* begin
+        case (angle_index)
+            -4'sd4: begin vel_dx_mag = 3'd3; vel_dy = -11'sd4; end  // steep up
+            -4'sd3: begin vel_dx_mag = 3'd4; vel_dy = -11'sd3; end  // medium up
+            -4'sd2: begin vel_dx_mag = 3'd4; vel_dy = -11'sd2; end  // mild up
+            -4'sd1: begin vel_dx_mag = 3'd5; vel_dy = -11'sd1; end  // slight up
+             4'sd0: begin vel_dx_mag = 3'd5; vel_dy =  11'sd0; end  // horizontal
+             4'sd1: begin vel_dx_mag = 3'd5; vel_dy =  11'sd1; end  // slight down
+             4'sd2: begin vel_dx_mag = 3'd4; vel_dy =  11'sd2; end  // mild down
+             4'sd3: begin vel_dx_mag = 3'd4; vel_dy =  11'sd3; end  // medium down
+             4'sd4: begin vel_dx_mag = 3'd3; vel_dy =  11'sd4; end  // steep down
+            default: begin vel_dx_mag = 3'd5; vel_dy =  11'sd0; end
+        endcase
+    end
 
     // ------------------------------------------------------------------------
     // State machine
@@ -140,13 +158,10 @@ module game_logic (
             score_right     <= 4'd0;
             ball_x          <= 10'd320 - (`BALL_SIZE / 2);
             ball_y          <= 10'd240 - (`BALL_SIZE / 2);
-            paddle_left_y   <= 9'd240 - (`PADDLE_H / 2);
-            paddle_right_y  <= 9'd240 - (`PADDLE_H / 2);
+            paddle_left_y   <= 10'd240 - (`PADDLE_H / 2);
+            paddle_right_y  <= 10'd240 - (`PADDLE_H / 2);
             ball_dx         <= 1;
             ball_dy         <= 0;
-            serve_dy_base   <= 0;
-            serve_dy_numer  <= 2'd0;
-            dy_frac_accum   <= 4'd0;
             serve_side      <= 1'b0;
             score_timer     <= 20'd0;
             serve_timer     <= 20'd0;
@@ -177,7 +192,6 @@ module game_logic (
                 // ------- IDLE -------
                 S_IDLE: begin
                     if (start_pause && !start_pause_d) begin
-                        // reset scores and start new game
                         next_score_left  = 4'd0;
                         next_score_right = 4'd0;
                         serve_side      <= 1'b0;
@@ -190,27 +204,26 @@ module game_logic (
 
                 // ------- SERVE -------
                 S_SERVE: begin
-                    // One-time setup on first entry
                     if (serve_timer == 20'd0) begin
-                        // Place ball at center, set direction toward serving side
                         next_ball_x = 10'd320 - (`BALL_SIZE / 2);
                         next_ball_y = 10'd240 - (`BALL_SIZE / 2);
 
-                        // Horizontal speed: ±1 per tick (original speed)
-                        if (serve_side == 1'b0) begin
-                            ball_dx <= 1;   // moving right
-                        end else begin
-                            ball_dx <= -1;  // moving left
-                        end
-
-                        // 3 discrete serve angles: -45deg, 0deg, +45deg
-                        // Within +/-45 deg cone for horizontal dominance
-                        case (rand_cnt[1:0])
-                            2'd0: ball_dy <= -1;
-                            2'd1: ball_dy <=  0;
-                            2'd2: ball_dy <=  1;
-                            default: ball_dy <= 0;
+                        // Serve: random angle from 7 options, |V|≈5 constant
+                        case (rand_cnt[5:3])
+                            3'd0: angle_index =  4'sd0;   // horizontal
+                            3'd1: angle_index =  4'sd1;   // slight down
+                            3'd2: angle_index = -4'sd1;   // slight up
+                            3'd3: angle_index =  4'sd2;   // mild down
+                            3'd4: angle_index = -4'sd2;   // mild up
+                            3'd5: angle_index =  4'sd3;   // medium down
+                            3'd6: angle_index = -4'sd3;   // medium up
+                            3'd7: angle_index =  4'sd0;   // horizontal (extra)
                         endcase
+                        if (serve_side == 1'b0)
+                            ball_dx <= $signed({1'b0, vel_dx_mag});   // right
+                        else
+                            ball_dx <= -$signed({1'b0, vel_dx_mag});  // left
+                        ball_dy <= vel_dy;
 
                         // Update tick threshold for this round
                         case (ball_speed_idx)
@@ -223,11 +236,9 @@ module game_logic (
                         endcase
                     end
 
-                    // Increment serve timer
                     if (serve_timer < `SERVE_TIMEOUT)
                         serve_timer <= serve_timer + 1;
 
-                    // Transition: manual start or auto-serve timeout
                     if (start_pause && !start_pause_d) begin
                         serve_timer  <= 20'd0;
                         next_state = S_PLAY;
@@ -241,12 +252,10 @@ module game_logic (
 
                 // ------- PLAY -------
                 S_PLAY: begin
-                    // --- Pause check ---
                     if (start_pause && !start_pause_d) begin
                         next_state = S_PAUSE;
                     end else begin
                         // --- Paddle movement ---
-                        // Left paddle
                         if (left_up && (paddle_left_y > `PADDLE_MIN_Y))
                             next_paddle_left_y = paddle_left_y - `PADDLE_SPEED;
                         else if (left_down && (paddle_left_y < `PADDLE_MAX_Y))
@@ -254,7 +263,6 @@ module game_logic (
                         else
                             next_paddle_left_y = paddle_left_y;
                         
-                        // Right paddle
                         if (right_up_sel && (paddle_right_y > `PADDLE_MIN_Y))
                             next_paddle_right_y = paddle_right_y - `PADDLE_SPEED;
                         else if (right_down_sel && (paddle_right_y < `PADDLE_MAX_Y))
@@ -269,78 +277,94 @@ module game_logic (
                         // --- Top/Bottom boundary bounce ---
                         if (next_y_s <= 11'sd0) begin
                             next_ball_y = `BALL_MIN_Y;
-                            ball_dy <= -ball_dy; // bounce down
+                            ball_dy <= -ball_dy;
                         end else if (next_y_s >= 11'sd464) begin
                             next_ball_y = `SCREEN_H - `BALL_SIZE - `BALL_SIZE;
-                            ball_dy <= -ball_dy; // bounce up
+                            ball_dy <= -ball_dy;
                         end
 
-                        // --- Paddle collision flag (local, resets every tick) ---
                         hit_paddle_this = 1'b0;
 
                         // --- Left paddle collision ---
                         if ((next_x_s <= 11'sd30) &&
                             (next_x_s + 11'sd8 >= 11'sd20) &&
-                            (next_y_s + 11'sd8 > $signed(paddle_left_y)) &&
-                            (next_y_s < $signed(paddle_left_y) + 11'sd80)) begin
+                            (next_y_s + 11'sd8 > $signed({1'b0, paddle_left_y})) &&
+                            (next_y_s < $signed({1'b0, paddle_left_y}) + 11'sd80)) begin
                             hit_paddle_this   = 1'b1;
                             next_ball_x       = `LEFT_PADDLE_X + `PADDLE_W;
-                            ball_dx           <= -ball_dx;  // reverse direction to right
                             hit_paddle        <= 1'b1;
 
-                            // Spin: offset between ball center and paddle center
-                            spin_temp = -ball_dy + (($signed(ball_center_y) - $signed(pad_l_center_y)) >>> 4);
-                            if (spin_temp > 11'sd4)
-                                ball_dy <= 11'sd4;
-                            else if (spin_temp < -11'sd4)
-                                ball_dy <= -11'sd4;
+                            // Angle from hit offset -> constant-speed velocity
+                            if ($signed({1'b0, ball_center_y}) - $signed({1'b0, pad_l_center_y}) > 11'sd30)
+                                angle_index =  4'sd4;
+                            else if ($signed({1'b0, ball_center_y}) - $signed({1'b0, pad_l_center_y}) > 11'sd15)
+                                angle_index =  4'sd3;
+                            else if ($signed({1'b0, ball_center_y}) - $signed({1'b0, pad_l_center_y}) > 11'sd5)
+                                angle_index =  4'sd2;
+                            else if ($signed({1'b0, ball_center_y}) - $signed({1'b0, pad_l_center_y}) > 11'sd0)
+                                angle_index =  4'sd1;
+                            else if ($signed({1'b0, ball_center_y}) - $signed({1'b0, pad_l_center_y}) > -11'sd5)
+                                angle_index =  4'sd0;
+                            else if ($signed({1'b0, ball_center_y}) - $signed({1'b0, pad_l_center_y}) > -11'sd15)
+                                angle_index = -4'sd1;
+                            else if ($signed({1'b0, ball_center_y}) - $signed({1'b0, pad_l_center_y}) > -11'sd30)
+                                angle_index = -4'sd2;
                             else
-                                ball_dy <= spin_temp;
+                                angle_index = -4'sd3;
+
+                            ball_dx <=  $signed({1'b0, vel_dx_mag});  // bounce right
+                            ball_dy <=  vel_dy;
                         end
 
                         // --- Right paddle collision ---
                         if ((next_x_s + 11'sd8 >= 11'sd610) &&
                             (next_x_s <= 11'sd620) &&
-                            (next_y_s + 11'sd8 > $signed(paddle_right_y)) &&
-                            (next_y_s < $signed(paddle_right_y) + 11'sd80)) begin
+                            (next_y_s + 11'sd8 > $signed({1'b0, paddle_right_y})) &&
+                            (next_y_s < $signed({1'b0, paddle_right_y}) + 11'sd80)) begin
                             hit_paddle_this   = 1'b1;
                             next_ball_x       = `RIGHT_PADDLE_X - `BALL_SIZE;
-                            ball_dx           <= -ball_dx;  // reverse direction to left
                             hit_paddle        <= 1'b1;
 
-                            // Spin: offset between ball center and paddle center
-                            spin_temp = -ball_dy + (($signed(ball_center_y) - $signed(pad_r_center_y)) >>> 4);
-                            if (spin_temp > 11'sd4)
-                                ball_dy <= 11'sd4;
-                            else if (spin_temp < -11'sd4)
-                                ball_dy <= -11'sd4;
+                            // Angle from hit offset -> constant-speed velocity
+                            if ($signed({1'b0, ball_center_y}) - $signed({1'b0, pad_r_center_y}) > 11'sd30)
+                                angle_index =  4'sd4;
+                            else if ($signed({1'b0, ball_center_y}) - $signed({1'b0, pad_r_center_y}) > 11'sd15)
+                                angle_index =  4'sd3;
+                            else if ($signed({1'b0, ball_center_y}) - $signed({1'b0, pad_r_center_y}) > 11'sd5)
+                                angle_index =  4'sd2;
+                            else if ($signed({1'b0, ball_center_y}) - $signed({1'b0, pad_r_center_y}) > 11'sd0)
+                                angle_index =  4'sd1;
+                            else if ($signed({1'b0, ball_center_y}) - $signed({1'b0, pad_r_center_y}) > -11'sd5)
+                                angle_index =  4'sd0;
+                            else if ($signed({1'b0, ball_center_y}) - $signed({1'b0, pad_r_center_y}) > -11'sd15)
+                                angle_index = -4'sd1;
+                            else if ($signed({1'b0, ball_center_y}) - $signed({1'b0, pad_r_center_y}) > -11'sd30)
+                                angle_index = -4'sd2;
                             else
-                                ball_dy <= spin_temp;
+                                angle_index = -4'sd3;
+
+                            ball_dx <= -$signed({1'b0, vel_dx_mag});  // bounce left
+                            ball_dy <=  vel_dy;
                         end
 
                         // --- Score detection ---
-                        // Use signed next_x_s to correctly detect off-screen:
-                        // with signed velocities, a ball moving off the left edge
-                        // produces a negative next_x_s (not a wrapped unsigned value).
                         if (!hit_paddle_this) begin
                             if (next_x_s <= 11'sd0) begin
-                                // Right player scores
                                 next_score_right = score_right + 1;
                                 score_event <= 1'b1;
                                 if (next_score_right == `MAX_SCORE) begin
                                     next_state = S_OVER;
                                 end else begin
-                                    serve_side <= 1'b0;   // left serves next
+                                    serve_side <= 1'b0;
                                     next_state = S_SCORE;
                                 end
                             end else if (next_x_s + 11'sd8 >= 11'sd640) begin
-                                // Left player scores
                                 next_score_left = score_left + 1;
                                 score_event <= 1'b1;
                                 if (next_score_left == `MAX_SCORE) begin
                                     next_state = S_OVER;
                                 end else begin
-                                    serve_side <= 1'b1;   // right serves next
+                                    serve_side <= 1'b1;
                                     next_state = S_SCORE;
                                 end
                             end else begin
@@ -364,7 +388,7 @@ module game_logic (
                 S_SCORE: begin
                     if (score_timer == `SCORE_TIMEOUT) begin
                         score_timer <= 20'd0;
-                        serve_timer <= 20'd0;   // reset auto-serve timer
+                        serve_timer <= 20'd0;
                         next_state = S_SERVE;
                     end else begin
                         score_timer <= score_timer + 1;
@@ -376,7 +400,6 @@ module game_logic (
                 S_OVER: begin
                     game_over_event <= 1'b1;
                     if (start_pause && !start_pause_d) begin
-                        // go back to idle and reset scores
                         next_score_left  = 4'd0;
                         next_score_right = 4'd0;
                         next_state = S_IDLE;
@@ -388,7 +411,7 @@ module game_logic (
                 default: next_state = S_IDLE;
             endcase
 
-            // Register updates (except those already assigned)
+            // Register updates
             game_state     <= next_state;
             paddle_left_y  <= next_paddle_left_y;
             paddle_right_y <= next_paddle_right_y;

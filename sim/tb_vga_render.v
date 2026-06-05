@@ -8,7 +8,7 @@ module tb_vga_render;
     reg [8:0]  row_addr;
     reg [9:0]  col_addr;
     reg [9:0]  ball_x, ball_y;
-    reg [8:0]  paddle_left_y, paddle_right_y;
+    reg [9:0]  paddle_left_y, paddle_right_y;
     reg [3:0]  score_left, score_right;
     reg [2:0]  game_state;
     wire [11:0] rgb_out;

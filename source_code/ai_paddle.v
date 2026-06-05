@@ -12,7 +12,7 @@ module ai_paddle (
     input  wire        rst_n,
     input  wire        game_tick,
     input  wire [9:0]  ball_y,
-    input  wire [8:0]  paddle_y,
+    input  wire [9:0]  paddle_y,
     input  wire        ball_toward_ai,   // 1 = ball moving toward this paddle
     output reg         move_up,
     output reg         move_down
@@ -35,15 +35,26 @@ module ai_paddle (
     // ------------------------------------------------------------------------
     reg [15:0] rand_cnt;       // free-running counter for pseudo-random delay
     reg [5:0]  update_timer;   // counts down each game_tick; update when 0
+    reg [7:0]  osc_phase;      // phase counter for idle oscillation
+    reg        osc_dir;         // 0 = oscillate up, 1 = oscillate down
 
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
             rand_cnt     <= 16'd0;
             update_timer <= 6'd0;
+            osc_phase    <= 8'd0;
+            osc_dir      <= 1'b0;
             move_up      <= 1'b0;
             move_down    <= 1'b0;
         end else if (game_tick) begin
             rand_cnt <= rand_cnt + 1;
+
+            // Idle oscillation: free-running phase counter
+            // Flipping direction every ~32 game ticks gives ~64 pixel amplitude
+            // (PADDLE_SPEED = 2, so each half-cycle travels 2 * 32 = 64 pixels)
+            osc_phase <= osc_phase + 1;
+            if (&osc_phase[4:0])        // every 32 game ticks
+                osc_dir <= ~osc_dir;
 
             if (update_timer == 6'd0) begin
                 if (ball_toward_ai) begin
@@ -55,8 +66,9 @@ module ai_paddle (
                         move_up   <= 1'b0;
                         move_down <= 1'b1;
                     end else begin
-                        move_up   <= 1'b0;
-                        move_down <= 1'b0;
+                        // Within dead zone — oscillate to avoid standing still
+                        move_up   <= ~osc_dir;
+                        move_down <=  osc_dir;
                     end
                 end else begin
                     // Ball moving away: drift back toward screen center
@@ -69,8 +81,9 @@ module ai_paddle (
                         move_up   <= 1'b0;
                         move_down <= 1'b1;
                     end else begin
-                        move_up   <= 1'b0;
-                        move_down <= 1'b0;
+                        // Paddle near center, ball moving away — oscillate
+                        move_up   <= ~osc_dir;
+                        move_down <=  osc_dir;
                     end
                 end
 

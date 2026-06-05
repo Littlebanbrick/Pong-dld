@@ -126,7 +126,7 @@ input_merger u_input_merger (
 wire [2:0]  game_state;      // encoded states
 wire [3:0]  score_left, score_right;
 wire [9:0]  ball_x, ball_y;
-wire [8:0]  paddle_left_y, paddle_right_y;
+wire [9:0]  paddle_left_y, paddle_right_y;
 // Event pulses for sound
 wire        hit_paddle, score_event, game_over_event;
 wire        serve_side;

@@ -21,7 +21,7 @@ module tb_game_logic;
     wire [2:0] game_state;
     wire [3:0] score_left, score_right;
     wire [9:0] ball_x, ball_y;
-    wire [8:0] paddle_left_y, paddle_right_y;
+    wire [9:0] paddle_left_y, paddle_right_y;
     wire       hit_paddle, score_event, game_over_event;
 
     // Instantiate DUT

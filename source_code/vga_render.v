@@ -13,8 +13,8 @@ module vga_render (
     // Game object coordinates
     input  wire [9:0]  ball_x,       // ball leftmost pixel X
     input  wire [9:0]  ball_y,       // ball topmost pixel Y
-    input  wire [8:0]  paddle_left_y,
-    input  wire [8:0]  paddle_right_y,
+    input  wire [9:0]  paddle_left_y,
+    input  wire [9:0]  paddle_right_y,
     input  wire [3:0]  score_left,
     input  wire [3:0]  score_right,
     input  wire [2:0]  game_state,   // state encoding (S_OVER = 5)
