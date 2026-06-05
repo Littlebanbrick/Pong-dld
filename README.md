@@ -37,7 +37,7 @@ Pong_Project/
 │   └── Final_Report.pdf
 ├── source_code/
 │   ├── defines.vh              # Global macro definitions
-│   ├── Top.v              # Top-level module
+│   ├── Top.v                   # Top-level module
 │   ├── clk_wiz.v               # Clocking Wizard wrapper (25.175 MHz)
 │   ├── game_logic.v            # State machine, ball physics, paddle control, AI integration
 │   ├── ai_paddle.v             # AI opponent logic
@@ -121,7 +121,7 @@ Pong_Project/
 │   └── Final_Report.pdf
 ├── source_code/
 │   ├── defines.vh              # 全局宏定义
-│   ├── Top.v              # 顶层模块
+│   ├── Top.v                   # 顶层模块
 │   ├── clk_wiz.v               # 时钟向导封装（25.175MHz）
 │   ├── game_logic.v            # 状态机、球物理、球拍控制、AI 集成
 │   ├── ai_paddle.v             # AI 对手逻辑
