@@ -125,7 +125,10 @@ module game_logic (
     reg         start_pause_d;           // delayed copy for edge detection
     reg  [15:0] rand_cnt;                // free-running counter for serve random
     reg         hit_paddle_this;          // pulsed if paddle hit in this tick
-    reg signed  [10:0] spin_temp;        // intermediate for spin calculation
+    reg signed  [1:0] serve_dy_base;      // serve fractional dy (unused/deprecated): base (-1/0/1)
+    reg         [1:0] serve_dy_numer;    // serve fractional dy (unused/deprecated): numerator (0/1/2)
+    reg signed  [3:0] dy_frac_accum;    // accumulator for fractional dy movement
+    reg signed  [10:0] spin_temp;       // intermediate for spin calculation
 
     // ------------------------------------------------------------------------
     // State machine
@@ -139,8 +142,11 @@ module game_logic (
             ball_y          <= 10'd240 - (`BALL_SIZE / 2);
             paddle_left_y   <= 9'd240 - (`PADDLE_H / 2);
             paddle_right_y  <= 9'd240 - (`PADDLE_H / 2);
-            ball_dx         <= 11'sd3;
-            ball_dy         <= 11'sd0;
+            ball_dx         <= 1;
+            ball_dy         <= 0;
+            serve_dy_base   <= 0;
+            serve_dy_numer  <= 2'd0;
+            dy_frac_accum   <= 4'd0;
             serve_side      <= 1'b0;
             score_timer     <= 20'd0;
             serve_timer     <= 20'd0;
@@ -190,23 +196,19 @@ module game_logic (
                         next_ball_x = 10'd320 - (`BALL_SIZE / 2);
                         next_ball_y = 10'd240 - (`BALL_SIZE / 2);
 
-                        // Set dx = ±3 to ensure enough horizontal velocity
+                        // Horizontal speed: ±1 per tick (original speed)
                         if (serve_side == 1'b0) begin
-                            ball_dx <= 11'sd3;   // moving right
+                            ball_dx <= 1;   // moving right
                         end else begin
-                            ball_dx <= -11'sd3;  // moving left
+                            ball_dx <= -1;  // moving left
                         end
 
-                        // 7 discrete serve angles: dy ∈ {-3,-2,-1,0,1,2,3}
-                        // Constraint: |dy| ≤ |dx| → within ±45° cone
-                        case (rand_cnt[2:0])
-                            3'd0: ball_dy <= -3;
-                            3'd1: ball_dy <= -2;
-                            3'd2: ball_dy <= -1;
-                            3'd3: ball_dy <=  0;
-                            3'd4: ball_dy <=  1;
-                            3'd5: ball_dy <=  2;
-                            3'd6: ball_dy <=  3;
+                        // 3 discrete serve angles: -45deg, 0deg, +45deg
+                        // Within +/-45 deg cone for horizontal dominance
+                        case (rand_cnt[1:0])
+                            2'd0: ball_dy <= -1;
+                            2'd1: ball_dy <=  0;
+                            2'd2: ball_dy <=  1;
                             default: ball_dy <= 0;
                         endcase
 
@@ -260,7 +262,7 @@ module game_logic (
                         else
                             next_paddle_right_y = paddle_right_y;
 
-                        // --- Ball movement (signed temporary, then truncate) ---
+                        // --- Ball movement ---
                         next_ball_x = next_x_s[9:0];
                         next_ball_y = next_y_s[9:0];
 
@@ -287,11 +289,11 @@ module game_logic (
                             hit_paddle        <= 1'b1;
 
                             // Spin: offset between ball center and paddle center
-                            spin_temp = -ball_dy + (($signed(ball_center_y) - $signed(pad_l_center_y)) >>> 3);
-                            if (spin_temp > 11'sd8)
-                                ball_dy <= 11'sd8;
-                            else if (spin_temp < -11'sd8)
-                                ball_dy <= -11'sd8;
+                            spin_temp = -ball_dy + (($signed(ball_center_y) - $signed(pad_l_center_y)) >>> 4);
+                            if (spin_temp > 11'sd4)
+                                ball_dy <= 11'sd4;
+                            else if (spin_temp < -11'sd4)
+                                ball_dy <= -11'sd4;
                             else
                                 ball_dy <= spin_temp;
                         end
@@ -307,11 +309,11 @@ module game_logic (
                             hit_paddle        <= 1'b1;
 
                             // Spin: offset between ball center and paddle center
-                            spin_temp = -ball_dy + (($signed(ball_center_y) - $signed(pad_r_center_y)) >>> 3);
-                            if (spin_temp > 11'sd8)
-                                ball_dy <= 11'sd8;
-                            else if (spin_temp < -11'sd8)
-                                ball_dy <= -11'sd8;
+                            spin_temp = -ball_dy + (($signed(ball_center_y) - $signed(pad_r_center_y)) >>> 4);
+                            if (spin_temp > 11'sd4)
+                                ball_dy <= 11'sd4;
+                            else if (spin_temp < -11'sd4)
+                                ball_dy <= -11'sd4;
                             else
                                 ball_dy <= spin_temp;
                         end
