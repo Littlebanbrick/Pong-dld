@@ -60,19 +60,32 @@ module game_logic (
     assign game_tick = (tick_counter >= tick_threshold);
 
     // ------------------------------------------------------------------------
+    // Signed temporary signals for position updates, boundary checks,
+    // and spin computation.  We extend ball_x/y to signed so that
+    // negative velocities (moving left/up) produce correct signed results.
+    // ------------------------------------------------------------------------
+    wire signed [10:0] next_x_s = $signed({1'b0, ball_x}) + ball_dx;
+    wire signed [10:0] next_y_s = $signed({1'b0, ball_y}) + ball_dy;
+
+    // Center-of-gravity positions for spin (paddle hit offset)
+    wire [9:0] ball_center_y  = ball_y  + (`BALL_SIZE  >> 1);
+    wire [9:0] pad_l_center_y = paddle_left_y  + (`PADDLE_H >> 1);
+    wire [9:0] pad_r_center_y = paddle_right_y + (`PADDLE_H >> 1);
+
+    // ------------------------------------------------------------------------
     // AI paddle control
     // ------------------------------------------------------------------------
     wire ai_right_up, ai_right_down;
-    wire ball_toward_ai = ~ball_dx[9];  // 1 = ball moving right (toward right-paddle AI)
+    wire ball_toward_ai = ball_dx > 0;  // signed: positive = moving right
     ai_paddle u_ai (
-        .clk        (clk),
-        .rst_n      (rst_n),
-        .game_tick  (game_tick),
-        .ball_y     (ball_y),
-        .paddle_y   (paddle_right_y),
+        .clk            (clk),
+        .rst_n          (rst_n),
+        .game_tick      (game_tick),
+        .ball_y         (ball_y),
+        .paddle_y       (paddle_right_y),
         .ball_toward_ai (ball_toward_ai),
-        .move_up    (ai_right_up),
-        .move_down  (ai_right_down)
+        .move_up        (ai_right_up),
+        .move_down      (ai_right_down)
     );
 
     // Mux between player and AI for right paddle
@@ -106,11 +119,13 @@ module game_logic (
     reg  [3:0]  next_score_left, next_score_right;
     reg  [9:0]  next_ball_x, next_ball_y;
     reg  [8:0]  next_paddle_left_y, next_paddle_right_y;
-    reg  [9:0]  ball_dx, ball_dy;     // ball velocity (direction only, magnitude 1)
-    reg  [19:0] score_timer;          // delay after scoring
-    reg  [19:0] serve_timer;          // delay before auto-serve
-    reg         start_pause_d;       // delayed copy for edge detection
-    reg  [15:0] rand_cnt;            // free-running counter for serve random
+    reg signed  [10:0] ball_dx, ball_dy;  // signed velocity (±1..±3 + spin)
+    reg  [19:0] score_timer;              // delay after scoring
+    reg  [19:0] serve_timer;              // delay before auto-serve
+    reg         start_pause_d;           // delayed copy for edge detection
+    reg  [15:0] rand_cnt;                // free-running counter for serve random
+    reg         hit_paddle_this;          // pulsed if paddle hit in this tick
+    reg signed  [10:0] spin_temp;        // intermediate for spin calculation
 
     // ------------------------------------------------------------------------
     // State machine
@@ -124,8 +139,8 @@ module game_logic (
             ball_y          <= 10'd240 - (`BALL_SIZE / 2);
             paddle_left_y   <= 9'd240 - (`PADDLE_H / 2);
             paddle_right_y  <= 9'd240 - (`PADDLE_H / 2);
-            ball_dx         <= 10'd1;
-            ball_dy         <= 10'd1;
+            ball_dx         <= 11'sd3;
+            ball_dy         <= 11'sd0;
             serve_side      <= 1'b0;
             score_timer     <= 20'd0;
             serve_timer     <= 20'd0;
@@ -174,12 +189,26 @@ module game_logic (
                         // Place ball at center, set direction toward serving side
                         next_ball_x = 10'd320 - (`BALL_SIZE / 2);
                         next_ball_y = 10'd240 - (`BALL_SIZE / 2);
+
+                        // Set dx = ±3 to ensure enough horizontal velocity
                         if (serve_side == 1'b0) begin
-                            ball_dx <= 10'd1;   // moving right
+                            ball_dx <= 11'sd3;   // moving right
                         end else begin
-                            ball_dx <= -10'd1;  // moving left
+                            ball_dx <= -11'sd3;  // moving left
                         end
-                        ball_dy <= (rand_cnt[0]) ? 10'd1 : -10'd1;   // pseudo-random up/down
+
+                        // 7 discrete serve angles: dy ∈ {-3,-2,-1,0,1,2,3}
+                        // Constraint: |dy| ≤ |dx| → within ±45° cone
+                        case (rand_cnt[2:0])
+                            3'd0: ball_dy <= 11'sd -3;
+                            3'd1: ball_dy <= 11'sd -2;
+                            3'd2: ball_dy <= 11'sd -1;
+                            3'd3: ball_dy <= 11'sd  0;
+                            3'd4: ball_dy <= 11'sd  1;
+                            3'd5: ball_dy <= 11'sd  2;
+                            3'd6: ball_dy <= 11'sd  3;
+                            default: ball_dy <= 11'sd 0;
+                        endcase
 
                         // Update tick threshold for this round
                         case (ball_speed_idx)
@@ -231,59 +260,89 @@ module game_logic (
                         else
                             next_paddle_right_y = paddle_right_y;
 
-                        // --- Ball movement ---
-                        next_ball_x = ball_x + ball_dx;
-                        next_ball_y = ball_y + ball_dy;
+                        // --- Ball movement (signed temporary, then truncate) ---
+                        next_ball_x = next_x_s[9:0];
+                        next_ball_y = next_y_s[9:0];
 
                         // --- Top/Bottom boundary bounce ---
-                        if (next_ball_y <= `BALL_MIN_Y) begin
+                        if (next_y_s <= 11'sd0) begin
                             next_ball_y = `BALL_MIN_Y;
                             ball_dy <= -ball_dy; // bounce down
-                        end else if (next_ball_y + `BALL_SIZE >= `BALL_MAX_Y) begin
-                            next_ball_y = `BALL_MAX_Y - `BALL_SIZE;
+                        end else if (next_y_s >= 11'sd464) begin
+                            next_ball_y = `SCREEN_H - `BALL_SIZE - `BALL_SIZE;
                             ball_dy <= -ball_dy; // bounce up
                         end
 
+                        // --- Paddle collision flag (local, resets every tick) ---
+                        hit_paddle_this = 1'b0;
+
                         // --- Left paddle collision ---
-                        if ((next_ball_x <= `LEFT_PADDLE_X + `PADDLE_W) &&
-                            (next_ball_x + `BALL_SIZE >= `LEFT_PADDLE_X) &&
-                            (next_ball_y + `BALL_SIZE > paddle_left_y) &&
-                            (next_ball_y < paddle_left_y + `PADDLE_H)) begin
-                            next_ball_x = `LEFT_PADDLE_X + `PADDLE_W;
-                            ball_dx <= 10'd1;  // reverse direction to right
-                            hit_paddle <= 1'b1;
+                        if ((next_x_s <= 11'sd30) &&
+                            (next_x_s + 11'sd8 >= 11'sd20) &&
+                            (next_y_s + 11'sd8 > $signed(paddle_left_y)) &&
+                            (next_y_s < $signed(paddle_left_y) + 11'sd80)) begin
+                            hit_paddle_this   = 1'b1;
+                            next_ball_x       = `LEFT_PADDLE_X + `PADDLE_W;
+                            ball_dx           <= -ball_dx;  // reverse direction to right
+                            hit_paddle        <= 1'b1;
+
+                            // Spin: offset between ball center and paddle center
+                            spin_temp = -ball_dy + (($signed(ball_center_y) - $signed(pad_l_center_y)) >>> 3);
+                            if (spin_temp > 11'sd8)
+                                ball_dy <= 11'sd8;
+                            else if (spin_temp < -11'sd8)
+                                ball_dy <= -11'sd8;
+                            else
+                                ball_dy <= spin_temp;
                         end
 
                         // --- Right paddle collision ---
-                        if ((next_ball_x + `BALL_SIZE >= `RIGHT_PADDLE_X) &&
-                            (next_ball_x <= `RIGHT_PADDLE_X + `PADDLE_W) &&
-                            (next_ball_y + `BALL_SIZE > paddle_right_y) &&
-                            (next_ball_y < paddle_right_y + `PADDLE_H)) begin
-                            next_ball_x = `RIGHT_PADDLE_X - `BALL_SIZE;
-                            ball_dx <= -10'd1; // reverse direction to left
-                            hit_paddle <= 1'b1;
+                        if ((next_x_s + 11'sd8 >= 11'sd610) &&
+                            (next_x_s <= 11'sd620) &&
+                            (next_y_s + 11'sd8 > $signed(paddle_right_y)) &&
+                            (next_y_s < $signed(paddle_right_y) + 11'sd80)) begin
+                            hit_paddle_this   = 1'b1;
+                            next_ball_x       = `RIGHT_PADDLE_X - `BALL_SIZE;
+                            ball_dx           <= -ball_dx;  // reverse direction to left
+                            hit_paddle        <= 1'b1;
+
+                            // Spin: offset between ball center and paddle center
+                            spin_temp = -ball_dy + (($signed(ball_center_y) - $signed(pad_r_center_y)) >>> 3);
+                            if (spin_temp > 11'sd8)
+                                ball_dy <= 11'sd8;
+                            else if (spin_temp < -11'sd8)
+                                ball_dy <= -11'sd8;
+                            else
+                                ball_dy <= spin_temp;
                         end
 
                         // --- Score detection ---
-                        if (next_ball_x <= `BALL_MIN_X) begin
-                            // Right player scores
-                            next_score_right = score_right + 1;
-                            score_event <= 1'b1;
-                            if (next_score_right == `MAX_SCORE) begin
-                                next_state = S_OVER;
+                        // Use signed next_x_s to correctly detect off-screen:
+                        // with signed velocities, a ball moving off the left edge
+                        // produces a negative next_x_s (not a wrapped unsigned value).
+                        if (!hit_paddle_this) begin
+                            if (next_x_s <= 11'sd0) begin
+                                // Right player scores
+                                next_score_right = score_right + 1;
+                                score_event <= 1'b1;
+                                if (next_score_right == `MAX_SCORE) begin
+                                    next_state = S_OVER;
+                                end else begin
+                                    serve_side <= 1'b0;   // left serves next
+                                    next_state = S_SCORE;
+                                end
+                            end else if (next_x_s + 11'sd8 >= 11'sd640) begin
+                                // Left player scores
+                                next_score_left = score_left + 1;
+                                score_event <= 1'b1;
+                                if (next_score_left == `MAX_SCORE) begin
+                                    next_state = S_OVER;
+                                end else begin
+                                    serve_side <= 1'b1;   // right serves next
+                                    next_state = S_SCORE;
+                                end
                             end else begin
-                                serve_side <= 1'b0;   // left serves next
-                                next_state = S_SCORE;
-                            end
-                        end else if (next_ball_x + `BALL_SIZE >= `BALL_MAX_X) begin
-                            // Left player scores
-                            next_score_left = score_left + 1;
-                            score_event <= 1'b1;
-                            if (next_score_left == `MAX_SCORE) begin
-                                next_state = S_OVER;
-                            end else begin
-                                serve_side <= 1'b1;   // right serves next
-                                next_state = S_SCORE;
+                                next_state = S_PLAY;
                             end
                         end else begin
                             next_state = S_PLAY;
