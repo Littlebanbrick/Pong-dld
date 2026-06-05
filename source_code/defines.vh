@@ -48,11 +48,11 @@
 // ----------------------------------------------------------------------------
 // Tick thresholds for each speed = TICK_MAX / speed
 `define TICK_THRESH_SPEED1  19'd419583  // speed 1 (Easy / Auto start)
-`define TICK_THRESH_SPEED2  19'd209791  // speed 2 (Hard)
-`define TICK_THRESH_SPEED3  19'd139861  // speed 3 (Master)
+`define TICK_THRESH_SPEED2  19'd139861  // speed 2 (Hard)
+`define TICK_THRESH_SPEED3  19'd69930   // speed 3 (Master)
 `define TICK_THRESH_SPEED4  19'd104895  // speed 4 (Auto mid)
-`define TICK_THRESH_SPEED5  19'd83916   // speed 5 (Auto max)
-`define AUTO_MAX_SPEED      5           // max speed in Auto mode
+`define TICK_THRESH_SPEED5  19'd69930   // speed 5 (Auto max)
+`define AUTO_MAX_SPEED      10          // max speed in Auto mode
 
 // ----------------------------------------------------------------------------
 // Game logic timing
