@@ -25,7 +25,7 @@ module powerup_ctrl (
     // Timing constants (in game_ticks)
     // ------------------------------------------------------------------------
     localparam LIFETIME       = 150;   // ~2.5 sec at 60 Hz
-    localparam COOLDOWN_BASE  = 120;   // ~2.0 sec at 60 Hz
+    localparam COOLDOWN_BASE  = 480;   // ~8.0 sec at 60 Hz
 
     // ------------------------------------------------------------------------
     // Lane X positions (center of the powerup on each side)
@@ -42,8 +42,9 @@ module powerup_ctrl (
     // Internal state
     // ------------------------------------------------------------------------
     reg [7:0] lifetime_cnt;      // counts up in ACTIVE state
-    reg [7:0] cooldown_cnt;      // counts up in COOLDOWN state
-    reg [7:0] cooldown_target;
+    reg [8:0] cooldown_cnt;      // counts up in COOLDOWN state
+    reg [8:0] cooldown_target;
+    reg       prev_side_left;    // 1 = last powerup was on left, force right next time
     reg [1:0] state;             // 0=COOLDOWN, 1=ACTIVE
 
     localparam S_COOLDOWN = 2'd0;
@@ -67,6 +68,7 @@ module powerup_ctrl (
             cooldown_cnt    <= 8'd0;
             cooldown_target <= 8'd0;
             rand_cnt        <= 16'd0;
+            prev_side_left  <= 1'b0;
             hit_left        <= 1'b0;
             hit_right       <= 1'b0;
         end else if (game_tick) begin
@@ -93,11 +95,13 @@ module powerup_ctrl (
                         cooldown_cnt    <= 8'd0;
                         lifetime_cnt    <= 8'd0;
 
-                        // Pick left or right lane from rand_cnt[0]
-                        if (rand_cnt[0]) begin
+                        // Alternate sides (guarantees balanced distribution)
+                        if (prev_side_left) begin
                             powerup_x <= LANE_RIGHT_X;
+                            prev_side_left <= 1'b0;
                         end else begin
                             powerup_x <= LANE_LEFT_X;
+                            prev_side_left <= 1'b1;
                         end
 
                         // Random Y: 40 + rand[9:4]*4 → range 40 .. 292
