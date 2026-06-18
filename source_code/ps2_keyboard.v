@@ -36,10 +36,11 @@ module ps2_keyboard (
     end
     assign neg_edge_ps2_clk = !ps2_clk_s1 && ps2_clk_s2;
 
-    // Also synchronize data line (only used when clock falls)
-    reg ps2_data_s;
+    // Synchronize data line (double-stage for metastability)
+    reg ps2_data_s0, ps2_data_s1;
     always @(posedge clk) begin
-        ps2_data_s <= PS2_data;
+        ps2_data_s0 <= PS2_data;
+        ps2_data_s1 <= ps2_data_s0;
     end
 
     // ------------------------------------------------------------------------
@@ -60,14 +61,14 @@ module ps2_keyboard (
             if (neg_edge_ps2_clk) begin
                 case (bit_cnt)
                     4'd0:  bit_cnt <= bit_cnt + 1;    // start bit, ignore
-                    4'd1:  begin shift_reg[0] <= ps2_data_s; bit_cnt <= bit_cnt + 1; end
-                    4'd2:  begin shift_reg[1] <= ps2_data_s; bit_cnt <= bit_cnt + 1; end
-                    4'd3:  begin shift_reg[2] <= ps2_data_s; bit_cnt <= bit_cnt + 1; end
-                    4'd4:  begin shift_reg[3] <= ps2_data_s; bit_cnt <= bit_cnt + 1; end
-                    4'd5:  begin shift_reg[4] <= ps2_data_s; bit_cnt <= bit_cnt + 1; end
-                    4'd6:  begin shift_reg[5] <= ps2_data_s; bit_cnt <= bit_cnt + 1; end
-                    4'd7:  begin shift_reg[6] <= ps2_data_s; bit_cnt <= bit_cnt + 1; end
-                    4'd8:  begin shift_reg[7] <= ps2_data_s; bit_cnt <= bit_cnt + 1; end
+                    4'd1:  begin shift_reg[0] <= ps2_data_s1; bit_cnt <= bit_cnt + 1; end
+                    4'd2:  begin shift_reg[1] <= ps2_data_s1; bit_cnt <= bit_cnt + 1; end
+                    4'd3:  begin shift_reg[2] <= ps2_data_s1; bit_cnt <= bit_cnt + 1; end
+                    4'd4:  begin shift_reg[3] <= ps2_data_s1; bit_cnt <= bit_cnt + 1; end
+                    4'd5:  begin shift_reg[4] <= ps2_data_s1; bit_cnt <= bit_cnt + 1; end
+                    4'd6:  begin shift_reg[5] <= ps2_data_s1; bit_cnt <= bit_cnt + 1; end
+                    4'd7:  begin shift_reg[6] <= ps2_data_s1; bit_cnt <= bit_cnt + 1; end
+                    4'd8:  begin shift_reg[7] <= ps2_data_s1; bit_cnt <= bit_cnt + 1; end
                     4'd9:  begin bit_cnt <= bit_cnt + 1; end  // parity, ignore
                     4'd10: begin
                         // stop bit, frame complete
@@ -137,14 +138,10 @@ module ps2_keyboard (
             right_down  <= 1'b0;
             start_pause <= 1'b0;
         end else if (key_valid) begin
-            // Extended keys (arrows) have E0 prefix, others not
             if (is_extended_q) begin
                 case (key_make_code)
                     8'h75: right_up   <= !is_break_latched;   // Up arrow
                     8'h72: right_down <= !is_break_latched;   // Down arrow
-                    8'h6B: left_up    <= !is_break_latched;   // Left arrow (we use as left_up? No, we want W/S for left)
-                    // We'll map left_up/down to W/S (not extended)
-                    // For arrows, we just map to right paddle
                 endcase
             end else begin
                 case (key_make_code)
