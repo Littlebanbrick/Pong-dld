@@ -44,7 +44,6 @@ module powerup_ctrl (
     reg [7:0] lifetime_cnt;      // counts up in ACTIVE state
     reg [7:0] cooldown_cnt;      // counts up in COOLDOWN state
     reg [7:0] cooldown_target;
-    reg [15:0] rand_cnt;     // free-running for spawn randomness   // random cooldown duration (latched at enter)
     reg [1:0] state;             // 0=COOLDOWN, 1=ACTIVE
 
     localparam S_COOLDOWN = 2'd0;
@@ -70,7 +69,6 @@ module powerup_ctrl (
             rand_cnt        <= 16'd0;
             hit_left        <= 1'b0;
             hit_right       <= 1'b0;
-            rand_cnt        <= 16'd0;
         end else if (game_tick) begin
             rand_cnt <= rand_cnt + 1;   // free-running RNG source
             // Default: pulse low
