@@ -27,6 +27,8 @@ Recreate the classic arcade game **Pong** on an FPGA, featuring two-player versu
 
 ### Extended Features
 - **VGA Display**: Full game screen with paddles, ball, center line, and scores
+- **Ball Trail**: 3-frame ghost trail behind the ball with fading brightness (t-3: dark, t-1: bright)
+- **Wide Paddle Powerup**: Green diamond spawns alternately on left/right paddle lanes (~8 sec cooldown). Collecting it extends the paddle by 5 px on both top and bottom for ~5 seconds (visualized with gray extension bands)
 - **PS/2 Keyboard**: USB keyboard input (W/S for left paddle, ↑/↓ for right paddle, Enter/Space for start/pause, Esc for soft reset); works in parallel with onboard matrix keyboard
 - **Buzzer Sound Effects**: Different tone frequencies for paddle hit, scoring, and game over events
 - **Single-player AI**: Right paddle automatically tracks the ball's Y coordinate with a dead zone (60 px), randomized update delay, and direction-aware behavior (drifts to center when ball moves away)
@@ -35,6 +37,8 @@ Recreate the classic arcade game **Pong** on an FPGA, featuring two-player versu
 - **Paddle speed decoupled from game tick**: Paddle displacement per tick scales inversely with difficulty, keeping effective speed fair. Old behavior tied paddle to game tick rate, making Easy paddles extremely slow (120 px/s).
 - **Fixed top-boundary underflow**: Paddle boundary check now ensures subtraction doesn't wrap around via unsigned arithmetic, preventing the paddle from disappearing off the top of the screen.
 - **PS/2 data synchronization**: Data line now uses double-stage flip-flops for metastability protection.
+- **Ball trail**: 3-frame ghost trail behind the ball with fading brightness for smoother visual tracking.
+- **Wide paddle powerup**: Green diamond powerup spawns on paddle lanes every ~8 seconds; collecting it extends the paddle by 5 px on both top and bottom for ~5 seconds. Sides alternate to ensure fair distribution.
 
 ## File Structure
 ```
@@ -55,6 +59,7 @@ Pong_Project/
 │   ├── input_merger.v          # Merges matrix and PS/2 inputs
 │   ├── seg_display.v           # 4-digit 7-segment driver (shows difficulty)
 │   ├── led_status.v            # LED status indicator
+│   ├── powerup_ctrl.v          # Wide-paddle powerup controller
 │   └── buzzer_ctrl.v           # Passive buzzer tone generator
 ├── sim/
 │   ├── tb_game_logic.v
