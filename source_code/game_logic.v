@@ -106,6 +106,23 @@ module game_logic (
     end
 
     // ------------------------------------------------------------------------
+    // Paddle speed selection (constant effective speed across difficulties)
+    // Easy(60Hz)=6, Hard(120Hz)=3, Master(180Hz)=2, Auto(start)=6
+    // All give 360 px/s effective paddle speed.
+    // ------------------------------------------------------------------------
+    reg [2:0] paddle_speed;
+
+    always @* begin
+        case (difficulty)
+            2'b00: paddle_speed = 3'd6;  // Easy:   60 Hz × 6 = 360 px/s
+            2'b01: paddle_speed = 3'd3;  // Hard:  120 Hz × 3 = 360 px/s
+            2'b10: paddle_speed = 3'd2;  // Master: 180 Hz × 2 = 360 px/s
+            2'b11: paddle_speed = 3'd6;  // Auto:   starts at 60 Hz × 6
+            default: paddle_speed = 3'd6;
+        endcase
+    end
+
+    // ------------------------------------------------------------------------
     // Internal registers
     // ------------------------------------------------------------------------
     reg  [2:0]  next_state;
@@ -254,18 +271,18 @@ module game_logic (
                     if (start_pause && !start_pause_d) begin
                         next_state = S_PAUSE;
                     end else begin
-                        // --- Paddle movement ---
+                        // --- Paddle movement (constant effective speed across difficulties) ---
                         if (left_up && (paddle_left_y > `PADDLE_MIN_Y))
-                            next_paddle_left_y = paddle_left_y - `PADDLE_SPEED;
+                            next_paddle_left_y = paddle_left_y - paddle_speed;
                         else if (left_down && (paddle_left_y < `PADDLE_MAX_Y))
-                            next_paddle_left_y = paddle_left_y + `PADDLE_SPEED;
+                            next_paddle_left_y = paddle_left_y + paddle_speed;
                         else
                             next_paddle_left_y = paddle_left_y;
                         
                         if (right_up_sel && (paddle_right_y > `PADDLE_MIN_Y))
-                            next_paddle_right_y = paddle_right_y - `PADDLE_SPEED;
+                            next_paddle_right_y = paddle_right_y - paddle_speed;
                         else if (right_down_sel && (paddle_right_y < `PADDLE_MAX_Y))
-                            next_paddle_right_y = paddle_right_y + `PADDLE_SPEED;
+                            next_paddle_right_y = paddle_right_y + paddle_speed;
                         else
                             next_paddle_right_y = paddle_right_y;
 
