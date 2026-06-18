@@ -293,23 +293,17 @@ module game_logic (
                             next_ball_x       = `LEFT_PADDLE_X + `PADDLE_W;
                             hit_paddle        <= 1'b1;
 
-                            // Angle from hit offset -> constant-speed velocity
-                            if ($signed({1'b0, ball_center_y}) - $signed({1'b0, pad_l_center_y}) > 11'sd30)
-                                angle_index =  4'sd4;
-                            else if ($signed({1'b0, ball_center_y}) - $signed({1'b0, pad_l_center_y}) > 11'sd15)
-                                angle_index =  4'sd3;
-                            else if ($signed({1'b0, ball_center_y}) - $signed({1'b0, pad_l_center_y}) > 11'sd5)
+                            // Angle from hit offset -> constant-speed velocity (reduced range)
+                            if ($signed({1'b0, ball_center_y}) - $signed({1'b0, pad_l_center_y}) > 11'sd20)
                                 angle_index =  4'sd2;
-                            else if ($signed({1'b0, ball_center_y}) - $signed({1'b0, pad_l_center_y}) > 11'sd0)
+                            else if ($signed({1'b0, ball_center_y}) - $signed({1'b0, pad_l_center_y}) > 11'sd5)
                                 angle_index =  4'sd1;
                             else if ($signed({1'b0, ball_center_y}) - $signed({1'b0, pad_l_center_y}) > -11'sd5)
                                 angle_index =  4'sd0;
-                            else if ($signed({1'b0, ball_center_y}) - $signed({1'b0, pad_l_center_y}) > -11'sd15)
+                            else if ($signed({1'b0, ball_center_y}) - $signed({1'b0, pad_l_center_y}) > -11'sd20)
                                 angle_index = -4'sd1;
-                            else if ($signed({1'b0, ball_center_y}) - $signed({1'b0, pad_l_center_y}) > -11'sd30)
-                                angle_index = -4'sd2;
                             else
-                                angle_index = -4'sd3;
+                                angle_index = -4'sd2;
 
                             ball_dx <=  $signed({1'b0, vel_dx_mag});  // bounce right
                             ball_dy <=  vel_dy;
@@ -328,23 +322,17 @@ module game_logic (
                             next_ball_x       = `RIGHT_PADDLE_X - `BALL_SIZE;
                             hit_paddle        <= 1'b1;
 
-                            // Angle from hit offset -> constant-speed velocity
-                            if ($signed({1'b0, ball_center_y}) - $signed({1'b0, pad_r_center_y}) > 11'sd30)
-                                angle_index =  4'sd4;
-                            else if ($signed({1'b0, ball_center_y}) - $signed({1'b0, pad_r_center_y}) > 11'sd15)
-                                angle_index =  4'sd3;
-                            else if ($signed({1'b0, ball_center_y}) - $signed({1'b0, pad_r_center_y}) > 11'sd5)
+                            // Angle from hit offset -> constant-speed velocity (reduced range)
+                            if ($signed({1'b0, ball_center_y}) - $signed({1'b0, pad_r_center_y}) > 11'sd20)
                                 angle_index =  4'sd2;
-                            else if ($signed({1'b0, ball_center_y}) - $signed({1'b0, pad_r_center_y}) > 11'sd0)
+                            else if ($signed({1'b0, ball_center_y}) - $signed({1'b0, pad_r_center_y}) > 11'sd5)
                                 angle_index =  4'sd1;
                             else if ($signed({1'b0, ball_center_y}) - $signed({1'b0, pad_r_center_y}) > -11'sd5)
                                 angle_index =  4'sd0;
-                            else if ($signed({1'b0, ball_center_y}) - $signed({1'b0, pad_r_center_y}) > -11'sd15)
+                            else if ($signed({1'b0, ball_center_y}) - $signed({1'b0, pad_r_center_y}) > -11'sd20)
                                 angle_index = -4'sd1;
-                            else if ($signed({1'b0, ball_center_y}) - $signed({1'b0, pad_r_center_y}) > -11'sd30)
-                                angle_index = -4'sd2;
                             else
-                                angle_index = -4'sd3;
+                                angle_index = -4'sd2;
 
                             ball_dx <= -$signed({1'b0, vel_dx_mag});  // bounce left
                             ball_dy <=  vel_dy;
