@@ -32,7 +32,10 @@ module game_logic (
     output reg         serve_side,
     output reg         hit_paddle,
     output reg         score_event,
-    output reg         game_over_event
+    output reg         game_over_event,
+    output wire        game_tick,
+    output wire        wide_left,
+    output wire        wide_right
 );
 
     // ------------------------------------------------------------------------
