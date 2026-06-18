@@ -25,13 +25,13 @@ module seg_display (
     localparam SEG_S   = 8'b10010010;  // a,c,d,f,g
     localparam SEG_y   = 8'b10010001;  // b,c,d,f,g
     localparam SEG_H   = 8'b10001001;  // b,c,e,f,g
-    localparam SEG_r   = 8'b10001111;  // f,e,g
+    localparam SEG_r   = 8'b10101111;  // e,g
     localparam SEG_d   = 8'b10100001;  // b,c,d,e,g
     localparam SEG_t   = 8'b10000111;  // d,e,f,g
     localparam SEG_U   = 8'b11000001;  // b,c,d,e,f
     localparam SEG_O   = 8'b11000000;  // a,b,c,d,e,f
     localparam SEG_nL  = 8'b10101111;  // e,g (left half of n)
-    localparam SEG_nR  = 8'b10111001;  // b,c,g (right half of n)
+    localparam SEG_nR  = 8'b10101011;  // e,c,g (right half of n)
 
     // ------------------------------------------------------------------------
     // Character lookup
