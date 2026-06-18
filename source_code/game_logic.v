@@ -53,8 +53,7 @@ module game_logic (
     // ------------------------------------------------------------------------
     reg [18:0] tick_counter;
     reg [18:0] tick_threshold = `TICK_THRESH_SPEED1;
-    wire game_tick;
-    
+
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
             tick_counter <= 19'd0;
