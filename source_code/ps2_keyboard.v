@@ -1,7 +1,7 @@
 // ============================================================================
 // ps2_keyboard.v - PS/2 keyboard receiver for Pong controls
-//   Recognizes W/S for left paddle, Up/Down arrows for right paddle,
-//   and Enter for start/pause.
+//   W/S for left paddle, Up/Down arrows for right paddle,
+//   Enter/Space for start/pause, Esc for soft reset.
 //   Based on the edge-detection method from Pan's code.
 // ============================================================================
 
@@ -14,7 +14,8 @@ module ps2_keyboard (
     output reg   left_down,
     output reg   right_up,
     output reg   right_down,
-    output reg   start_pause
+    output reg   start_pause,
+    output reg   soft_reset
 );
 
     // ------------------------------------------------------------------------
@@ -128,7 +129,7 @@ module ps2_keyboard (
     end
 
     // ------------------------------------------------------------------------
-    // Update paddle/start signals based on make/break events
+    // Update paddle/start/reset signals based on make/break events
     // ------------------------------------------------------------------------
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
@@ -137,6 +138,7 @@ module ps2_keyboard (
             right_up    <= 1'b0;
             right_down  <= 1'b0;
             start_pause <= 1'b0;
+            soft_reset  <= 1'b0;
         end else if (key_valid) begin
             if (is_extended_q) begin
                 case (key_make_code)
@@ -147,7 +149,9 @@ module ps2_keyboard (
                 case (key_make_code)
                     8'h1D: left_up    <= !is_break_latched;   // W
                     8'h1B: left_down  <= !is_break_latched;   // S
+                    8'h29: start_pause <= !is_break_latched;  // Space
                     8'h5A: start_pause <= !is_break_latched;  // Enter
+                    8'h76: soft_reset  <= !is_break_latched;  // Esc
                 endcase
             end
         end

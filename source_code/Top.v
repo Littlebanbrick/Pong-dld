@@ -83,8 +83,8 @@ keypad_scanner u_keypad (
     .start_pause(kp_start)
 );
 
-// Signals from PS/2 keyboard (W/S, Up/Down, Enter)
-wire ps2_left_up, ps2_left_down, ps2_right_up, ps2_right_down, ps2_start;
+// Signals from PS/2 keyboard (W/S, Up/Down, Enter, Space, Esc)
+wire ps2_left_up, ps2_left_down, ps2_right_up, ps2_right_down, ps2_start, ps2_soft_reset;
 
 ps2_keyboard u_ps2 (
     .clk        (clk_25m),
@@ -95,11 +95,12 @@ ps2_keyboard u_ps2 (
     .left_down  (ps2_left_down),
     .right_up   (ps2_right_up),
     .right_down (ps2_right_down),
-    .start_pause(ps2_start)
+    .start_pause(ps2_start),
+    .soft_reset (ps2_soft_reset)
 );
 
 // Merge two input sources (OR logic)
-wire left_up, left_down, right_up, right_down, start_pause;
+wire left_up, left_down, right_up, right_down, start_pause, soft_reset;
 
 input_merger u_input_merger (
     .kp_left_up    (kp_left_up),
@@ -112,11 +113,13 @@ input_merger u_input_merger (
     .ps2_right_up   (ps2_right_up),
     .ps2_right_down (ps2_right_down),
     .ps2_start      (ps2_start),
+    .ps2_soft_reset (ps2_soft_reset),
     .left_up        (left_up),
     .left_down      (left_down),
     .right_up       (right_up),
     .right_down     (right_down),
-    .start_pause    (start_pause)
+    .start_pause    (start_pause),
+    .soft_reset     (soft_reset)
 );
 
 // ============================================================================
@@ -140,6 +143,7 @@ game_logic u_game_logic (
     .right_up       (right_up),
     .right_down     (right_down),
     .start_pause    (start_pause),
+    .soft_reset     (soft_reset),
     // Mode selection (e.g., SW[1]: 0=dual, 1=AI)
     .ai_enable      (SW[1]),
     .difficulty     (SW[3:2]),

@@ -15,12 +15,14 @@ module input_merger (
     input  wire  ps2_right_up,
     input  wire  ps2_right_down,
     input  wire  ps2_start,
+    input  wire  ps2_soft_reset,
     // Merged outputs (active high)
     output wire  left_up,
     output wire  left_down,
     output wire  right_up,
     output wire  right_down,
-    output wire  start_pause
+    output wire  start_pause,
+    output wire  soft_reset
 );
 
     assign left_up     = kp_left_up     | ps2_left_up;
@@ -28,5 +30,6 @@ module input_merger (
     assign right_up    = kp_right_up    | ps2_right_up;
     assign right_down  = kp_right_down  | ps2_right_down;
     assign start_pause = kp_start       | ps2_start;
+    assign soft_reset  =                 ps2_soft_reset;
 
 endmodule

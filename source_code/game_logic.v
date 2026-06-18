@@ -13,6 +13,7 @@ module game_logic (
     input  wire        right_up,
     input  wire        right_down,
     input  wire        start_pause,
+    input  wire        soft_reset,
     // Mode / difficulty selection
     input  wire        ai_enable,      // 0 = two-player, 1 = AI controls right paddle
     input  wire [1:0]  difficulty,     // SW[3:2]: 00=Easy, 01=Hard, 10=Master, 11=Auto
@@ -132,6 +133,7 @@ module game_logic (
     reg  [19:0] score_timer;              // delay after scoring
     reg  [19:0] serve_timer;              // delay before auto-serve
     reg         start_pause_d;           // delayed copy for edge detection
+    reg         soft_reset_d;            // delayed copy for soft reset edge detection
     reg  [15:0] rand_cnt;                // free-running counter for serve random
     reg         hit_paddle_this;          // pulsed if paddle hit in this tick
 
@@ -178,6 +180,7 @@ module game_logic (
             score_timer     <= 20'd0;
             serve_timer     <= 20'd0;
             start_pause_d   <= 1'b0;
+            soft_reset_d    <= 1'b0;
             rand_cnt        <= 16'd0;
             tick_threshold  <= `TICK_THRESH_SPEED1;
             auto_threshold  <= `TICK_THRESH_SPEED1;
@@ -190,6 +193,7 @@ module game_logic (
             score_event     <= 1'b0;
             game_over_event <= 1'b0;
             start_pause_d   <= start_pause;   // edge detection
+            soft_reset_d    <= soft_reset;    // edge detection for soft reset
             rand_cnt        <= rand_cnt + 1;  // free-running for serve RNG
 
             // Default: next_* hold current value (prevents X propagation)
@@ -201,6 +205,18 @@ module game_logic (
             next_score_left    = score_left;
             next_score_right   = score_right;
 
+            // Soft reset: Esc pressed -> return to IDLE
+            if (soft_reset && !soft_reset_d) begin
+                next_state      = S_IDLE;
+                next_score_left = 4'd0;
+                next_score_right= 4'd0;
+                next_ball_x     = 10'd320 - (`BALL_SIZE / 2);
+                next_ball_y     = 10'd240 - (`BALL_SIZE / 2);
+                serve_side      <= 1'b0;
+                score_timer     <= 20'd0;
+                serve_timer     <= 20'd0;
+                auto_threshold  <= `TICK_THRESH_SPEED1;
+            end else begin
             case (game_state)
                 // ------- IDLE -------
                 S_IDLE: begin
@@ -421,6 +437,7 @@ module game_logic (
 
                 default: next_state = S_IDLE;
             endcase
+            end
 
             // Register updates
             game_state     <= next_state;
