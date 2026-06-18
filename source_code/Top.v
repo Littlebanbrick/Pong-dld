@@ -198,13 +198,12 @@ vga_render u_vga_render (
 );
 
 // ============================================================================
-// 7-segment display (score)
+// 7-segment display (difficulty)
 // ============================================================================
 seg_display u_seg (
     .clk        (clk_25m),
     .rst_n      (rst_n),
-    .score_left (score_left),
-    .score_right(score_right),
+    .difficulty (SW[3:2]),
     .AN         (AN),
     .SEGMENT    (SEGMENT)
 );

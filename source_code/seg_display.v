@@ -1,6 +1,6 @@
 // ============================================================================
 // seg_display.v - 4-digit 7-segment display driver (common anode)
-// Displays score_left (2 digits) and score_right (2 digits)
+// Displays difficulty: EASy, HArd, |St, AUtO
 // ============================================================================
 
 `include "defines.vh"
@@ -8,8 +8,7 @@
 module seg_display (
     input  wire        clk,
     input  wire        rst_n,
-    input  wire [3:0]  score_left,
-    input  wire [3:0]  score_right,
+    input  wire [1:0]  difficulty,
     output reg  [3:0]  AN,
     output reg  [7:0]  SEGMENT
 );
@@ -18,32 +17,65 @@ module seg_display (
     // Digit decoding (active low for common anode)
     // SEGMENT mapping: {dp, g, f, e, d, c, b, a}
     // ------------------------------------------------------------------------
-    localparam SEG_0 = 8'b11000000;
-    localparam SEG_1 = 8'b11111001;
-    localparam SEG_2 = 8'b10100100;
-    localparam SEG_3 = 8'b10110000;
-    localparam SEG_4 = 8'b10011001;
-    localparam SEG_5 = 8'b10010010;
-    localparam SEG_6 = 8'b10000010;
-    localparam SEG_7 = 8'b11111000;
-    localparam SEG_8 = 8'b10000000;
-    localparam SEG_9 = 8'b10010000;
     localparam SEG_OFF = 8'b11111111;
 
-    function [7:0] digit_to_seg;
-        input [3:0] digit;
-        case (digit)
-            4'd0: digit_to_seg = SEG_0;
-            4'd1: digit_to_seg = SEG_1;
-            4'd2: digit_to_seg = SEG_2;
-            4'd3: digit_to_seg = SEG_3;
-            4'd4: digit_to_seg = SEG_4;
-            4'd5: digit_to_seg = SEG_5;
-            4'd6: digit_to_seg = SEG_6;
-            4'd7: digit_to_seg = SEG_7;
-            4'd8: digit_to_seg = SEG_8;
-            4'd9: digit_to_seg = SEG_9;
-            default: digit_to_seg = SEG_OFF;
+    // Letter segments (common anode, 0=ON)
+    localparam SEG_E   = 8'b10000110;  // a,d,e,f,g
+    localparam SEG_A   = 8'b10001000;  // a,b,c,e,f,g
+    localparam SEG_S   = 8'b10010010;  // a,c,d,f,g
+    localparam SEG_y   = 8'b10010001;  // b,c,d,f,g
+    localparam SEG_H   = 8'b10001001;  // b,c,e,f,g
+    localparam SEG_r   = 8'b10001111;  // f,e,g
+    localparam SEG_d   = 8'b10100001;  // b,c,d,e,g
+    localparam SEG_t   = 8'b10000111;  // d,e,f,g
+    localparam SEG_U   = 8'b11000001;  // b,c,d,e,f
+    localparam SEG_O   = 8'b11000000;  // a,b,c,d,e,f
+    localparam SEG_BAR = 8'b11001111;  // f,e (left verticals)
+
+    // ------------------------------------------------------------------------
+    // Character lookup
+    // ------------------------------------------------------------------------
+    function [7:0] char_at;
+        input [1:0] diff;
+        input [1:0] pos;  // 0=rightmost, 3=leftmost
+        case (diff)
+            2'b00: begin  // EASy
+                case (pos)
+                    2'd0: char_at = SEG_y;
+                    2'd1: char_at = SEG_S;
+                    2'd2: char_at = SEG_A;
+                    2'd3: char_at = SEG_E;
+                    default: char_at = SEG_OFF;
+                endcase
+            end
+            2'b01: begin  // HArd
+                case (pos)
+                    2'd0: char_at = SEG_d;
+                    2'd1: char_at = SEG_r;
+                    2'd2: char_at = SEG_A;
+                    2'd3: char_at = SEG_H;
+                    default: char_at = SEG_OFF;
+                endcase
+            end
+            2'b10: begin  // |St  (mSt)
+                case (pos)
+                    2'd0: char_at = SEG_OFF;
+                    2'd1: char_at = SEG_t;
+                    2'd2: char_at = SEG_S;
+                    2'd3: char_at = SEG_BAR;
+                    default: char_at = SEG_OFF;
+                endcase
+            end
+            2'b11: begin  // AUtO
+                case (pos)
+                    2'd0: char_at = SEG_O;
+                    2'd1: char_at = SEG_t;
+                    2'd2: char_at = SEG_U;
+                    2'd3: char_at = SEG_A;
+                    default: char_at = SEG_OFF;
+                endcase
+            end
+            default: char_at = SEG_OFF;
         endcase
     endfunction
 
@@ -52,7 +84,7 @@ module seg_display (
     // ------------------------------------------------------------------------
     reg [12:0] scan_counter;
     wire scan_tick;
-    
+
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n)
             scan_counter <= 13'd0;
@@ -76,21 +108,21 @@ module seg_display (
         end else if (scan_tick) begin
             digit_sel <= digit_sel + 1;
             case (digit_sel)
-                2'd0: begin  // Rightmost digit -> right ones
+                2'd0: begin  // Rightmost digit
                     AN <= 4'b0111;
-                    SEGMENT <= digit_to_seg(score_right % 10);
+                    SEGMENT <= char_at(difficulty, 2'd0);
                 end
-                2'd1: begin  // Right tens
+                2'd1: begin
                     AN <= 4'b1011;
-                    SEGMENT <= digit_to_seg(score_right / 10);
+                    SEGMENT <= char_at(difficulty, 2'd1);
                 end
-                2'd2: begin  // Left ones
+                2'd2: begin
                     AN <= 4'b1101;
-                    SEGMENT <= digit_to_seg(score_left % 10);
+                    SEGMENT <= char_at(difficulty, 2'd2);
                 end
-                2'd3: begin  // Leftmost digit -> left tens
+                2'd3: begin  // Leftmost digit
                     AN <= 4'b1110;
-                    SEGMENT <= digit_to_seg(score_left / 10);
+                    SEGMENT <= char_at(difficulty, 2'd3);
                 end
             endcase
         end
