@@ -66,6 +66,8 @@
   leading: 0.75em,
   spacing: 1em,
 )
+// Force indent on all paragraphs, including the first after a heading
+#show par: set par(first-line-indent: 2em)
 
 // ---------------------------------------------------------------------------
 // Heading hierarchy

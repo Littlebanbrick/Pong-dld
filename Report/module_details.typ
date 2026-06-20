@@ -53,6 +53,8 @@
   leading: 0.75em,
   spacing: 1em,
 )
+// Force indent on all paragraphs, including the first after a heading
+#show par: set par(first-line-indent: 2em)
 
 #set heading(numbering: "1.1.1")
 #show heading.where(level: 1): set text(size: 20pt, weight: "bold")
