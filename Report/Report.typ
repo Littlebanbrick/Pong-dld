@@ -166,6 +166,7 @@
 状态机设计如下：
 #align(center,table(
   columns: (auto, auto, auto),
+  stroke: 0.3pt,
   align: left,
   table.header([*状态*], [*编码*], [*功能*]),
   [`S_IDLE`], [3'd0], [空闲：等待开始，球和挡板居中],
@@ -197,6 +198,7 @@
 碰撞时根据球心与挡板中心的偏移量确定反弹角度：
 #align(center,table(
   columns: (auto, auto, auto),
+  stroke: 0.3pt,
   align: left,
   table.header([*偏移量*], [*角度索引*], [*效果*]),
   [> 20px], [±2], [大角度：dx=4, dy=±2],
@@ -246,6 +248,7 @@
 驱动无源蜂鸣器产生三种不同频率的方波音效。
 #align(center,table(
   columns: (auto, auto, auto, auto),
+  stroke: 0.3pt,
   align: left,
   table.header([*事件*], [*频率*], [*半周期计数*], [*持续时间*]),
   [击球 hit_paddle], [1000Hz], [12587], [0.2秒],
@@ -263,6 +266,7 @@
 8 个 LED 指示灯映射如下：
 #align(center,table(
   columns: (auto, auto, auto),
+  stroke: 0.3pt,
   align: left,
   table.header([*LED位*], [*含义*], [*表现*]),
   [0], [空闲 IDLE], [常亮],
@@ -307,6 +311,7 @@ PS/2 键盘使用 Make/Break 机制：
 *键位映射*：
 #align(center,table(
   columns: (auto, auto, auto),
+  stroke: 0.3pt,
   align: left,
   table.header([*按键*], [*扫描码*], [*功能*]),
   [W], [`0x1D`], [左挡板上移],
@@ -333,6 +338,7 @@ PS/2 键盘使用 Make/Break 机制：
 用于定义全项目通用的参数，方便统一管理，主要宏定义如下：
 #align(center,table(
   columns: (auto, auto, auto),
+  stroke: 0.3pt,
   align: left,
   table.header([*类别*], [*宏名示例*], [*作用*]),
   [显示几何], [`SCREEN_W/H`], [VGA 分辨率 640×480],
@@ -496,7 +502,7 @@ AI 具有如下行为：
 - ball_y=231（略高于死区），paddle_y=200
 
 测试其上方追踪、下方追踪、死区静止、随机延迟功能，部分仿真波形图如下：
-#align(center,image("ai_paddle_test.png", width: 15cm))
+#align(center,image("ai_paddle_test.png", width: 100%))
 仿真结果符合预期。
 
 == game_logic
@@ -508,7 +514,7 @@ AI 具有如下行为：
 2. 遵循游戏进程：复位与空闲 → 开始游戏 → 开球 → 玩家控制 → 得分与重置 → 暂停与恢复。
 3. 通过观察 `game_state` 验证游戏进程是否正常进行。
 
-#align(center,image("game_logic_test.png", width: 15cm))
+#align(center,image("game_logic_test.png", width: 100%))
 可见游戏进程正常进行，从空闲到开始到暂停，状态转移符合预期。
 
 == buzzer_ctrl
@@ -520,6 +526,7 @@ AI 具有如下行为：
 验证 `vga_render` 模块能否在正确的位置显示出正确的颜色。
 #align(center,table(
   columns: (auto, auto, auto),
+  stroke: 0.3pt,
   [测试阶段], [操作], [验证目标],
   [初始化], [设置球在 (320,240)，球拍在 200，分数 3:7，状态为 PLAY], [建立已知初始状态],
   [Test 1], [读取背景位置 (100,100)], [验证背景色是否为黑色（12'h000）],
@@ -534,9 +541,10 @@ AI 具有如下行为：
 - 模拟 PS/2 总线时序（时钟约 16.7kHz，数据帧格式）。
 - 发送按键的 Make Code（按下）和 Break Code（释放）。
 - 验证解码后的按键信号（`left_up`、`left_down`、`right_up`、`right_down`、`start_pause`）。
-#pagebreak()
+
 #align(center,table(
   columns: (auto, auto, auto, auto),
+  stroke: 0.3pt,
   [步骤], [发送的扫描码], [对应按键], [预期输出],
   [1], [0x1D (make)], [W 键按下], [left_up = 1],
   [2], [0xF0 + 0x1D (break)], [W 键释放], [left_up = 0],
@@ -553,6 +561,7 @@ AI 具有如下行为：
 顶层模块测试。
 #align(center,table(
   columns: (auto, auto, auto, auto),
+  stroke: 0.3pt,
   [阶段], [测试内容], [验证点], [方法],
   [Phase 0], [上电复位], [系统正确复位], [拉低 rst_sw，等待 MMCM 锁定],
   [Test 1], [IDLE 状态], [复位后进入空闲状态], [检查 game_state=0，LED[0]=1],
@@ -568,6 +577,8 @@ AI 具有如下行为：
   [Test 11], [蜂鸣器], [蜂鸣器信号是否驱动], [检查 buzzer 不是 X/Z],
   [Test 12], [AI 模式], [AI 是否正确追踪球], [启用 AI（SW[1]=1），检查球拍运动],
 ))
+
+#pagebreak()
 
 // ═══════════════════════════════════════════════════════════════════════════
 // 6. 团队分工
@@ -602,8 +613,6 @@ AI 具有如下行为：
 // ═══════════════════════════════════════════════════════════════════════════
 = 各成员贡献比例
 
-王传宇：50%
-
-齐思航：50%
+王传宇：60%、齐思航：40%
 
 双方在项目中分工各有侧重，协同完成了仿真、调试与报告撰写等共同工作。
