@@ -17,3 +17,5 @@ Thumbs.db
 xdc_example/
 
 .deepseek/
+
+**/*.pdf
