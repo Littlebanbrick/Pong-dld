@@ -97,7 +97,13 @@
   ]
   #image("icon_ZJU.png", width: 40%)
   #v(2em)
+  #text(size: 18pt)[组名：PongCrew]
+  #v(0.3em)
+  #text(size: 18pt)[项目名：Pong Game on FPGA]
+  #v(0.3em)
   #text(size: 18pt)[组员：王传宇、齐思航]
+  #v(0.3em)
+  #text(size: 18pt)[指导老师：蔡铭]
   #v(0.3em)
   #text(size: 18pt)[#datetime.today().display("[year]/[month]/[day]")]
 ]
